@@ -3,63 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domain Name Launchpad - .okb, .star, .xdog</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Domain Name Launchpad - X Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
     <style>
-        :root {
-            --primary-color: #ff9100;
-            --secondary-color: #ff6f61;
-            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
-            --card-bg: #2c2f48;
-            --input-bg: #373b5c;
-            --text-color: #ffffff;
-            --border-radius: 15px;
-            --button-active-bg: #e68a00;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #121212; 
+            color: #E6E6E6; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.5; 
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            background: #1A1A1A; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--gradient-bg);
-            color: var(--text-color);
-            padding: 20px;
-            min-height: 100vh;
-            line-height: 1.5;
+        h1 { 
+            text-align: center; 
+            color: #cccccc; 
+            font-size: clamp(1.8em, 5vw, 2.5em); 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
         }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 30px;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        .section { 
+            background: #222222; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
         }
-        h1 {
-            text-align: center;
-            font-size: clamp(1.8em, 5vw, 2.5em);
-            margin-bottom: 25px;
-            font-weight: 700;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .section {
-            background: var(--input-bg);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--primary-color);
-        }
-        h2 {
-            font-size: clamp(1.2em, 3.5vw, 1.6em);
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: var(--primary-color);
+        h2 { 
+            color: #cccccc; 
+            font-size: clamp(1.2em, 3.5vw, 1.6em); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
         }
         .toggle-buttons {
             display: flex;
@@ -67,162 +51,169 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        .toggle-button {
-            padding: 10px 20px;
-            background: var(--input-bg);
-            border: none;
-            border-radius: var(--border-radius);
-            color: var(--text-color);
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-family: 'Poppins', sans-serif;
+        .toggle-button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
         }
-        .toggle-button.active {
-            background: var(--primary-color);
+        .toggle-button.active { 
+            background: #555555; 
+            transform: translateY(-2px); 
         }
-        .toggle-button:hover {
-            background: var(--button-active-bg);
+        .toggle-button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
         }
-        .button {
-            background: var(--primary-color);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            margin: 5px;
+        .button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
         }
-        .button:hover {
-            background: var(--button-active-bg);
-            transform: translateY(-2px);
+        .button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
         }
-        .button:disabled {
-            background: #4a4f7a;
-            color: #777777;
-            cursor: not-allowed;
+        .button:disabled { 
+            background: #444444; 
+            color: #777777; 
+            cursor: not-allowed; 
         }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid var(--primary-color);
-            border-radius: var(--border-radius);
-            background: var(--input-bg);
-            color: var(--text-color);
-            font-size: 1em;
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            background: #2A2A2A; 
+            color: #E6E6E6; 
+            font-size: 1em; 
         }
-        input::placeholder {
-            color: #666666;
+        input::placeholder { 
+            color: #666666; 
         }
-        .status {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--primary-color);
-            text-align: center;
+        .status { 
+            margin-top: 10px; 
+            font-size: 0.9em; 
+            color: #cccccc; 
         }
-        .wallet-info {
-            color: var(--text-color);
-            font-weight: 600;
-            word-break: break-all;
+        .wallet-info { 
+            color: #cccccc; 
+            font-weight: 600; 
+            word-break: break-all; 
         }
-        .nft-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        .nft-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
         }
-        .nft-table th, .nft-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #333333;
+        .nft-table th, .nft-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #333333; 
         }
-        .nft-table th {
-            background: var(--input-bg);
-            color: var(--primary-color);
-            font-weight: 600;
+        .nft-table th { 
+            background: #2A2A2A; 
+            color: #cccccc; 
+            font-weight: 600; 
         }
-        .view-btn {
-            background: var(--primary-color);
-            color: var(--text-color);
-            padding: 6px 12px;
-            font-size: 0.85em;
-            border-radius: var(--border-radius);
-            border: none;
-            cursor: pointer;
+        .copy-btn, .view-btn { 
+            background: #333333; 
+            color: #cccccc; 
+            padding: 6px 12px; 
+            font-size: 0.85em; 
+            border-radius: 4px; 
+            border: none; 
+            cursor: pointer; 
         }
-        .view-btn:hover {
-            background: var(--button-active-bg);
+        .copy-btn:hover, .view-btn:hover { 
+            background: #555555; 
         }
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
         }
-        .nft-preview {
-            margin-top: 15px;
-            text-align: center;
+        .nft-preview { 
+            margin-top: 15px; 
+            text-align: center; 
         }
-        .nft-preview img {
-            max-width: 100%;
-            border: 1px solid var(--primary-color);
-            border-radius: var(--border-radius);
+        .nft-preview img { 
+            max-width: 100%; 
+            border: 1px solid #cccccc; 
+            border-radius: 8px; 
         }
         .output-box {
-            background: var(--input-bg);
+            background: #2A2A2A;
             padding: 15px;
-            border-radius: var(--border-radius);
+            border-radius: 6px;
             margin-bottom: 15px;
             word-break: break-all;
             font-size: 0.9em;
-            color: var(--text-color);
+            color: #E6E6E6;
         }
         .output-box label {
             display: block;
             font-size: 0.9em;
             margin-bottom: 5px;
-            color: var(--primary-color);
+            color: #cccccc;
         }
-        .dog-section {
-            text-align: center;
-            margin-top: 20px;
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 0.85em; 
+            color: #666666; 
         }
-        .dog-section img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
+        .footer a { 
+            color: #cccccc; 
+            text-decoration: none; 
         }
-        .dog-message {
-            font-size: 0.9em;
-            color: var(--secondary-color);
-            font-style: italic;
-            font-family: 'Poppins', sans-serif;
+        .footer a:hover { 
+            text-decoration: underline; 
         }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.85em;
-            color: #666666;
+        .how-it-works { 
+            background: #222222; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+            margin-top: 20px; 
         }
-        .footer a {
-            color: var(--primary-color);
-            text-decoration: none;
+        .how-it-works ul { 
+            list-style-type: disc; 
+            padding-left: 20px; 
+            margin-top: 10px; 
         }
-        .footer a:hover {
-            text-decoration: underline;
+        .how-it-works li { 
+            margin-bottom: 12px; 
+            font-size: 0.9em; 
+        }
+        .how-it-works .highlight { 
+            color: #cccccc; 
+            font-weight: 600; 
         }
         @media (max-width: 768px) {
             .container { padding: 15px; }
-            .section { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
             .button, .toggle-button { width: 100%; padding: 12px; margin: 8px 0; }
             .nft-table { display: block; overflow-x: auto; }
             .nft-table th, .nft-table td { font-size: 0.85em; padding: 10px; }
             .nft-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #333333; }
             .nft-table td { display: block; text-align: left; }
             .nft-table td button { width: 100%; margin: 5px 0; }
-            .dog-section img { width: 50px; height: 50px; }
-            .dog-message { font-size: 0.8em; }
+            .how-it-works ul { padding-left: 15px; }
+            .how-it-works li { font-size: 0.85em; }
         }
     </style>
 </head>
@@ -247,13 +238,13 @@
                 <label>Hex Data</label>
                 <span id="hexOutputText">Enter a domain name to see the hex data</span>
             </div>
-            <button id="copyHexButton" class="button" onclick="copyToClipboard('hex')">Copy Hex Data</button>
+            <button id="copyHexButton" class="button" disabled>Copy Hex Data</button>
             <button id="mintDomain" class="button">Mint Domain NFT</button>
             <div class="output-box">
                 <label>Contract Address</label>
                 <span id="contractAddress">0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E</span>
             </div>
-            <button id="copyAddressButton" class="button" onclick="copyToClipboard('address')">Copy Contract Address</button>
+            <button id="copyAddressButton" class="button">Copy Contract Address</button>
             <div id="mintStatus" class="status"></div>
         </div>
         <div class="section" id="myDomainsSection">
@@ -275,9 +266,17 @@
                 <img id="nftImage" src="" alt="NFT Preview">
             </div>
         </div>
-        <div class="dog-section">
-            <img src="https://static.oklink.com/cdn/assets/imgs/235/4EC890FA53A98FFF.png" alt="WoofingJace">
-            <div class="dog-message" id="dogMessage">"Woof! Select a domain and enter a name to mint or convert!"</div>
+        <div class="how-it-works">
+            <h2>How It Works?</h2>
+            <p>Mint your unique domain name NFT on X Layer with our Launchpad! It’s simple and fast:</p>
+            <ul>
+                <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure you have enough <span class="highlight">OKB</span> for .okb or <span class="highlight">ETH</span> for .star/.xdog gas fees.</li>
+                <li><strong>Select Domain Type</strong>: Choose .okb, .star, or .xdog using the toggle buttons.</li>
+                <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123”). The NFT will be minted with the selected suffix.</li>
+                <li><strong>Manual Registration</strong>: Copy the hex data and contract address to register manually via a wallet transaction with 0 ETH/OKB and the hex data as msg.data.</li>
+                <li><strong>View Your Domains</strong>: Fetch your minted domain NFTs, including token IDs and full domain names (e.g., jace123.okb).</li>
+                <li><strong>Secure & Unique</strong>: Each address can mint only one domain per contract, and each ID is unique (case-insensitive). Built on X Layer for low fees and secure NFT creation.</li>
+            </ul>
         </div>
         <div class="footer">
             Powered by <a href="https://www.okx.com/web3/explorer/xlayer" target="_blank">X Layer</a> | Domain Name Launchpad © 2025
@@ -293,19 +292,25 @@
                 address: '0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E',
                 suffix: 'okb',
                 protocol: 'okbname',
-                currency: 'OKB'
+                currency: 'OKB',
+                name: 'OKB Inscription Domain Name',
+                symbol: 'DOKB'
             },
             star: {
                 address: '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD',
                 suffix: 'star',
                 protocol: 'starname',
-                currency: 'ETH'
+                currency: 'ETH',
+                name: 'Star Inscription Domain Name',
+                symbol: 'DSTAR'
             },
             xdog: {
                 address: '0x68B6387628b4096af034c3a9de3073AB18E744C2',
                 suffix: 'xdog',
                 protocol: 'xdogname',
-                currency: 'ETH'
+                currency: 'ETH',
+                name: 'XDog Inscription Domain Name',
+                symbol: 'DXDOG'
             }
         };
 
@@ -421,48 +426,6 @@
             rpcUrl: 'https://rpc.xlayer.tech'
         };
 
-        const dogMessages = {
-            default: (suffix) => [
-                `Woof! Enter a name to get its hex for ${suffix.toUpperCase()} domain registration!`,
-                `Arf! Type a domain, and I’ll fetch the hex for .${suffix}, pup!`,
-                `Bow wow! Let’s convert that name to hex for .${suffix}, Jace style!`,
-                `Yip yip! Ready to sniff out your .${suffix} domain’s hex code!`
-            ],
-            invalid: [
-                "Grrr... Only letters and numbers, pup! Try again!",
-                "Woof? That name’s got weird chars, stick to alphanumerics!",
-                "Arf! Name’s too long or empty, keep it 1-15 chars, hooman!",
-                "Ruff! Invalid name, use letters and numbers only, Jace pal!"
-            ],
-            success: (name, suffix) => [
-                `Arf arf! Hex for ${name}.${suffix} is ready, pup!`,
-                `Woof! Got the hex for ${name}.${suffix}, let’s register it!`,
-                `Bow wow! ${name}.${suffix} hex is fetched, copy it, hooman!`,
-                `Yip! Hex for ${name}.${suffix} is here, ready to roll!`
-            ],
-            copied: (type) => [
-                `Woof woof! ${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard, pup!`,
-                `Arf! Copied the ${type === 'hex' ? 'hex' : 'address'}, go register that domain!`,
-                `Bow wow! ${type === 'hex' ? 'Hex' : 'Address'} is in your clipboard, Jace champ!`,
-                `Yip yip! ${type === 'hex' ? 'Hex' : 'Address'} copied, you’re pawsome, hooman!`
-            ],
-            copyFailed: (type) => [
-                `Grrr... ${type === 'hex' ? 'Hex data' : 'Contract address'} copy failed! Try selecting and copying manually, Jace friend!`,
-                `Woof? Couldn’t copy the ${type === 'hex' ? 'hex' : 'address'}! Select the text manually, pup!`,
-                `Arf! Clipboard’s hiding the ${type === 'hex' ? 'hex' : 'address'}! Try manual copy, hooman!`,
-                `Ruff! ${type === 'hex' ? 'Hex' : 'Address'} copy didn’t work! Select and copy manually!`
-            ]
-        };
-
-        function getRandomMessage(type, param1, param2) {
-            const messages = dogMessages[type];
-            if (typeof messages === 'function') {
-                const options = messages(param1, param2);
-                return options[Math.floor(Math.random() * options.length)];
-            }
-            return messages[Math.floor(Math.random() * messages.length)];
-        }
-
         async function connectWallet() {
             const status = document.getElementById('networkStatus');
             try {
@@ -517,25 +480,19 @@
             const xdogButton = document.getElementById('xdogButton');
             const contractAddress = document.getElementById('contractAddress');
             const status = document.getElementById('mintStatus');
-            const dogMessage = document.getElementById('dogMessage');
 
-            // Update button states
             okbButton.classList.toggle('active', domain === 'okb');
             starButton.classList.toggle('active', domain === 'star');
             xdogButton.classList.toggle('active', domain === 'xdog');
 
-            // Update contract address
             contractAddress.textContent = contracts[domain].address;
 
-            // Update domain contract if wallet is connected
             if (web3 && accounts) {
                 domainContract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
             }
 
-            // Reset input and trigger conversion
             document.getElementById('domainId').value = '';
             status.textContent = '';
-            dogMessage.textContent = getRandomMessage('default', contracts[domain].suffix);
             convertToHex();
         }
 
@@ -557,14 +514,12 @@
             const input = document.getElementById('domainId').value.trim();
             const output = document.getElementById('hexOutputText');
             const status = document.getElementById('mintStatus');
-            const dogMessage = document.getElementById('dogMessage');
             const copyHexButton = document.getElementById('copyHexButton');
 
             if (!input) {
                 output.textContent = 'Enter a domain name to see the hex data';
                 output.dataset.hex = '';
                 status.textContent = '';
-                dogMessage.textContent = getRandomMessage('default', contracts[selectedDomain].suffix);
                 copyHexButton.disabled = true;
                 return;
             }
@@ -573,9 +528,7 @@
                 output.textContent = 'Invalid input: Use letters and numbers only, 1-15 characters';
                 output.dataset.hex = '';
                 status.textContent = 'Invalid input';
-                dogMessage.textContent = getRandomMessage('invalid');
                 copyHexButton.disabled = true;
-                fetchMyDomains();
                 return;
             }
 
@@ -586,14 +539,11 @@
             output.textContent = hexData;
             output.dataset.hex = hexData;
             status.textContent = `Hex data for ${input}.${contracts[selectedDomain].suffix} generated`;
-            dogMessage.textContent = getRandomMessage('success', input, contracts[selectedDomain].suffix);
             copyHexButton.disabled = false;
-            fetchMyDomains();
         }
 
         function copyToClipboard(type) {
             const status = document.getElementById('mintStatus');
-            const dogMessage = document.getElementById('dogMessage');
             let textToCopy;
             let sourceElement;
 
@@ -607,43 +557,21 @@
 
             if (!textToCopy || textToCopy === 'Enter a domain name to see the hex data' || textToCopy === 'Invalid input: Use letters and numbers only, 1-15 characters') {
                 status.textContent = `No valid ${type === 'hex' ? 'hex data' : 'address'} to copy`;
-                dogMessage.textContent = getRandomMessage('copyFailed', type);
                 return;
             }
 
-            if (navigator.clipboard && navigator.clipboard.write) {
-                navigator.clipboard.write(textToCopy).then(() => {
-                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
-                    dogMessage.textContent = getRandomMessage('copied', type);
-                }).catch((error) => {
-                    console.error(`Clipboard API copy ${type} failed:`, error);
-                    tryFallbackCopy(textToClip
-board, type, status, dogMessage);
-                });
-            } else {
-                tryFallbackCopy(textToClipboard, type, status, dogMessage);
-            }
-        }
-
-        function tryFallbackCopy(text, type, status, dogMessage) {
             const textArea = document.createElement('textarea');
-            textArea.value = text;
+            textArea.value = textToCopy;
             textArea.style.position = 'fixed';
             textArea.style.opacity = '0';
             document.body.appendChild(textArea);
             textArea.select();
             try {
                 const successful = document.execCommand('copy');
-                if (successful) {
-                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
-                    dogMessage.textContent = getRandomMessage('copied', type);
-                } else {
-                    throw new Error('execCommand copy failed');
-                }
+                status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
             } catch (error) {
-                console.error(`Fallback copy ${type} failed:`, error);
+                console.error(`Copy ${type} failed:`, error);
                 status.textContent = `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}. Select and copy manually.`;
-                dogMessage.textContent = getRandomMessage('copyFailed', type);
             } finally {
                 document.body.removeChild(textArea);
             }
@@ -652,16 +580,13 @@ board, type, status, dogMessage);
         async function mintDomain() {
             const section = document.getElementById('mintDomainSection');
             const status = document.getElementById('mintStatus');
-            const dogMessage = document.getElementById('dogMessage');
             const domainId = document.getElementById('domainId').value.trim();
             if (!domainId || domainId.length > 15 || !/^[a-zA-Z0-9]+$/.test(domainId)) {
                 status.innerText = "Invalid Domain ID. Use 1-15 alphanumeric characters.";
-                dogMessage.textContent = getRandomMessage('invalid');
                 return;
             }
             if (!accounts) {
                 status.innerText = "Please connect your wallet first!";
-                dogMessage.textContent = "Woof? Connect your wallet first, pup!";
                 return;
             }
             try {
@@ -671,13 +596,11 @@ board, type, status, dogMessage);
                 const isMinted = await domainContract.methods.idsMintedLower(domainIdLower).call();
                 if (isMinted) {
                     status.innerText = "Domain ID already minted!";
-                    dogMessage.textContent = `Arf! ${domainId}.${contracts[selectedDomain].suffix} is already taken, pup!`;
                     return;
                 }
                 const hasMinted = await domainContract.methods.ownerToTokenId(accounts[0]).call();
                 if (hasMinted != 0) {
                     status.innerText = "This address has already minted a domain!";
-                    dogMessage.textContent = "Ruff! You’ve already got a domain, hooman!";
                     return;
                 }
                 status.innerText = "Minting domain NFT...";
@@ -687,13 +610,11 @@ board, type, status, dogMessage);
                     gas: Math.floor(gas * 1.2)
                 });
                 status.innerHTML = `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${xLayer.explorerUrl}/token/${contracts[selectedDomain].address}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`;
-                dogMessage.textContent = getRandomMessage('success', domainId, contracts[selectedDomain].suffix);
                 document.getElementById('domainId').value = '';
                 fetchMyDomains();
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to mint domain: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
-                dogMessage.textContent = `Grrr... Minting failed, pup! Try again!`;
             } finally {
                 section.classList.remove('loading');
             }
@@ -702,12 +623,10 @@ board, type, status, dogMessage);
         async function fetchMyDomains() {
             if (!accounts) {
                 document.getElementById('domainsStatus').innerText = "Please connect your wallet first!";
-                document.getElementById('dogMessage').textContent = "Woof? Connect your wallet first, pup!";
                 return;
             }
             const section = document.getElementById('myDomainsSection');
             const status = document.getElementById('domainsStatus');
-            const dogMessage = document.getElementById('dogMessage');
             try {
                 section.classList.add('loading');
                 status.innerText = "Fetching your domains...";
@@ -733,11 +652,9 @@ board, type, status, dogMessage);
                     }
                 }
                 status.innerText = foundDomains ? "Domains loaded successfully!" : "No domains minted yet!";
-                dogMessage.textContent = foundDomains ? "Woof! Here are your domains, pup!" : "Arf! No domains yet, let’s mint one!";
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to fetch domains: " + error.message;
-                dogMessage.textContent = "Grrr... Couldn’t fetch domains, pup! Try again!";
             } finally {
                 section.classList.remove('loading');
             }
@@ -750,11 +667,9 @@ board, type, status, dogMessage);
                 const json = JSON.parse(atob(tokenURI.split(',')[1]));
                 document.getElementById('nftImage').src = json.image;
                 document.getElementById('nftPreview').style.display = 'block';
-                document.getElementById('dogMessage').textContent = `Woof! Showing NFT for ${json.name}, pup!`;
             } catch (error) {
                 console.error(error);
                 document.getElementById('domainsStatus').innerText = "Failed to load NFT preview: " + error.message;
-                document.getElementById('dogMessage').textContent = "Arf! Couldn’t load NFT preview, hooman!";
             }
         }
 
