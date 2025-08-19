@@ -208,10 +208,10 @@
                 `Yip yip! ${type === 'hex' ? 'Hex' : 'Address'} copied, you’re pawsome, hooman!`
             ],
             copyFailed: (type) => [
-                `Grrr... ${type === 'hex' ? 'Hex data' : 'Contract address'} copy failed, try again, Jace friend!`,
-                `Woof? Couldn’t copy the ${type === 'hex' ? 'hex' : 'address'}, give it another go, pup!`,
-                `Arf! Clipboard’s hiding the ${type === 'hex' ? 'hex' : 'address'}, retry copying, hooman!`,
-                `Ruff! ${type === 'hex' ? 'Hex' : 'Address'} copy didn’t work, let’s try that again!`
+                `Grrr... ${type === 'hex' ? 'Hex data' : 'Contract address'} copy failed! Try selecting and copying manually, Jace friend!`,
+                `Woof? Couldn’t copy the ${type === 'hex' ? 'hex' : 'address'}! Select the text manually, pup!`,
+                `Arf! Clipboard’s hiding the ${type === 'hex' ? 'hex' : 'address'}! Try manual copy, hooman!`,
+                `Ruff! ${type === 'hex' ? 'Hex' : 'Address'} copy didn’t work! Select and copy manually!`
             ]
         };
 
@@ -294,14 +294,43 @@
                 return;
             }
 
-            navigator.clipboard.write(textToCopy).then(() => {
-                status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
-                dogMessage.textContent = getRandomMessage('copied', type);
-            }).catch((error) => {
-                console.error(`Copy ${type} failed:`, error);
-                status.textContent = `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}`;
+            // Try Clipboard API first
+            if (navigator.clipboard && navigator.clipboard.write) {
+                navigator.clipboard.write(textToCopy).then(() => {
+                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
+                    dogMessage.textContent = getRandomMessage('copied', type);
+                }).catch((error) => {
+                    console.error(`Clipboard API copy ${type} failed:`, error);
+                    tryFallbackCopy(textToCopy, type, status, dogMessage);
+                });
+            } else {
+                tryFallbackCopy(textToCopy, type, status, dogMessage);
+            }
+        }
+
+        function tryFallbackCopy(text, type, status, dogMessage) {
+            // Fallback to document.execCommand
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
+                    dogMessage.textContent = getRandomMessage('copied', type);
+                } else {
+                    throw new Error('execCommand copy failed');
+                }
+            } catch (error) {
+                console.error(`Fallback copy ${type} failed:`, error);
+                status.textContent = `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}. Select and copy manually.`;
                 dogMessage.textContent = getRandomMessage('copyFailed', type);
-            });
+            } finally {
+                document.body.removeChild(textArea);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
