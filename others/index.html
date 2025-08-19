@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name to Hex Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+            --button-active-bg: #e68a00;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .toggle-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .toggle-button {
+            padding: 10px 20px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-button.active {
+            background: var(--primary-color);
+        }
+        .toggle-button:hover {
+            background: var(--button-active-bg);
+        }
+        .input-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        .input-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1em;
+        }
+        .output-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            word-break: break-all;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+        .output-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        .address-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: var(--text-color);
+            word-break: break-all;
+        }
+        .address-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        .copy-button {
+            padding: 12px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+        }
+        .copy-button:hover {
+            background: var(--button-active-bg);
+        }
+        .copy-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .instructions {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-size: 0.9em;
+            color: #ff9100;
+            margin-bottom: 15px;
+        }
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        .dog-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .dog-section img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .dog-message {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+            .toggle-button { padding: 8px 15px; font-size: 0.8em; }
+            .dog-section img { width: 50px; height: 50px; }
+            .dog-message { font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Name to Hex Converter</div>
+        <div class="toggle-buttons">
+            <button class="toggle-button active" id="starButton" onclick="selectDomain('star')">.star</button>
+            <button class="toggle-button" id="xdogButton" onclick="selectDomain('xdog')">.xdog</button>
+        </div>
+        <div class="input-box">
+            <label id="inputLabel">Domain Name (e.g., jace)</label>
+            <input type="text" id="domainInput" placeholder="Enter domain name" oninput="convertToHex()">
+        </div>
+        <div class="output-box">
+            <label>Hex Data</label>
+            <span id="hexOutputText">Enter a domain name to see the hex data</span>
+        </div>
+        <button class="copy-button" id="copyHexButton" onclick="copyToClipboard('hex')">Copy Hex Data</button>
+        <div class="address-box">
+            <label>Contract Address</label>
+            <span id="contractAddress">0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD</span>
+        </div>
+        <button class="copy-button" id="copyAddressButton" onclick="copyToClipboard('address')">Copy Contract Address</button>
+        <div class="instructions" id="instructions">
+            To register your .star domain, send a transaction with 0 ETH to the contract address above, using the generated hex data as the transaction data (msg.data).
+        </div>
+        <div class="status" id="status"></div>
+        <div class="dog-section">
+            <img src="https://static.oklink.com/cdn/assets/imgs/235/4EC890FA53A98FFF.png" alt="WoofingJace">
+            <div class="dog-message" id="dogMessage">"Woof! Enter a name to get its hex for STAR domain registration!"</div>
+        </div>
+    </div>
+    <script>
+        let selectedDomain = 'star'; // Default to .star
+
+        const contracts = {
+            star: {
+                address: '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD',
+                suffix: 'star',
+                protocol: 'starname'
+            },
+            xdog: {
+                address: '0x68B6387628b4096af034c3a9de3073AB18E744C2',
+                suffix: 'xdog',
+                protocol: 'xdogname'
+            }
+        };
+
+        const dogMessages = {
+            default: (suffix) => [
+                `Woof! Enter a name to get its hex for ${suffix.toUpperCase()} domain registration!`,
+                `Arf! Type a domain, and I’ll fetch the hex for .${suffix}, pup!`,
+                `Bow wow! Let’s convert that name to hex for .${suffix}, Jace style!`,
+                `Yip yip! Ready to sniff out your .${suffix} domain’s hex code!`
+            ],
+            invalid: [
+                "Grrr... Only letters and numbers, pup! Try again!",
+                "Woof? That name’s got weird chars, stick to alphanumerics!",
+                "Arf! Name’s too long or empty, keep it 1-15 chars, hooman!",
+                "Ruff! Invalid name, use letters and numbers only, Jace pal!"
+            ],
+            success: (name, suffix) => [
+                `Arf arf! Hex for ${name}.${suffix} is ready, pup!`,
+                `Woof! Got the hex for ${name}.${suffix}, let’s register it!`,
+                `Bow wow! ${name}.${suffix} hex is fetched, copy it, hooman!`,
+                `Yip! Hex for ${name}.${suffix} is here, ready to roll!`
+            ],
+            copied: (type) => [
+                `Woof woof! ${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard, pup!`,
+                `Arf! Copied the ${type === 'hex' ? 'hex' : 'address'}, go register that domain!`,
+                `Bow wow! ${type === 'hex' ? 'Hex' : 'Address'} is in your clipboard, Jace champ!`,
+                `Yip yip! ${type === 'hex' ? 'Hex' : 'Address'} copied, you’re pawsome, hooman!`
+            ],
+            copyFailed: (type) => [
+                `Grrr... ${type === 'hex' ? 'Hex data' : 'Contract address'} copy failed! Try selecting and copying manually, Jace friend!`,
+                `Woof? Couldn’t copy the ${type === 'hex' ? 'hex' : 'address'}! Select the text manually, pup!`,
+                `Arf! Clipboard’s hiding the ${type === 'hex' ? 'hex' : 'address'}! Try manual copy, hooman!`,
+                `Ruff! ${type === 'hex' ? 'Hex' : 'Address'} copy didn’t work! Select and copy manually!`
+            ]
+        };
+
+        function getRandomMessage(type, param1, param2) {
+            const messages = dogMessages[type];
+            if (typeof messages === 'function') {
+                const options = messages(param1, param2);
+                return options[Math.floor(Math.random() * options.length)];
+            }
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function selectDomain(domain) {
+            selectedDomain = domain;
+            const starButton = document.getElementById('starButton');
+            const xdogButton = document.getElementById('xdogButton');
+            const contractAddress = document.getElementById('contractAddress');
+            const instructions = document.getElementById('instructions');
+            const inputLabel = document.getElementById('inputLabel');
+            const status = document.getElementById('status');
+            const dogMessage = document.getElementById('dogMessage');
+
+            // Update button states
+            starButton.classList.toggle('active', domain === 'star');
+            xdogButton.classList.toggle('active', domain === 'xdog');
+
+            // Update contract address
+            contractAddress.textContent = contracts[domain].address;
+
+            // Update instructions
+            instructions.textContent = `To register your .${contracts[domain].suffix} domain, send a transaction with 0 ETH to the contract address above, using the generated hex data as the transaction data (msg.data).`;
+
+            // Update input label
+            inputLabel.textContent = `Domain Name (e.g., jace)`;
+
+            // Reset input and trigger conversion
+            document.getElementById('domainInput').value = '';
+            status.textContent = '';
+            dogMessage.textContent = getRandomMessage('default', contracts[domain].suffix);
+            convertToHex();
+        }
+
+        function isValidString(str) {
+            const strBytes = new TextEncoder().encode(str);
+            if (strBytes.length === 0 || strBytes.length > 15) return false;
+            for (let i = 0; i < strBytes.length; i++) {
+                const char = strBytes[i];
+                if (
+                    !(char >= 48 && char <= 57) && // 0-9
+                    !(char >= 65 && char <= 90) && // A-Z
+                    !(char >= 97 && char <= 122) // a-z
+                ) return false;
+            }
+            return true;
+        }
+
+        function convertToHex() {
+            const input = document.getElementById('domainInput').value.trim();
+            const output = document.getElementById('hexOutputText');
+            const status = document.getElementById('status');
+            const dogMessage = document.getElementById('dogMessage');
+            const copyHexButton = document.getElementById('copyHexButton');
+
+            if (!input) {
+                output.textContent = 'Enter a domain name to see the hex data';
+                output.dataset.hex = '';
+                status.textContent = '';
+                dogMessage.textContent = getRandomMessage('default', contracts[selectedDomain].suffix);
+                copyHexButton.disabled = true;
+                return;
+            }
+
+            if (!isValidString(input)) {
+                output.textContent = 'Invalid input: Use letters and numbers only, 1-15 characters';
+                output.dataset.hex = '';
+                status.textContent = 'Invalid input';
+                dogMessage.textContent = getRandomMessage('invalid');
+                copyHexButton.disabled = true;
+                return;
+            }
+
+            const inscription = `data:,{"p":"${contracts[selectedDomain].protocol}","op":"reg","name":"${input}.${contracts[selectedDomain].suffix}"}`;
+            const hexData = '0x' + Array.from(new TextEncoder().encode(inscription))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+            output.textContent = hexData;
+            output.dataset.hex = hexData;
+            status.textContent = `Hex data for ${input}.${contracts[selectedDomain].suffix} generated`;
+            dogMessage.textContent = getRandomMessage('success', input, contracts[selectedDomain].suffix);
+            copyHexButton.disabled = false;
+        }
+
+        function copyToClipboard(type) {
+            const status = document.getElementById('status');
+            const dogMessage = document.getElementById('dogMessage');
+            let textToCopy;
+            let sourceElement;
+
+            if (type === 'hex') {
+                sourceElement = document.getElementById('hexOutputText');
+                textToCopy = sourceElement.dataset.hex || '';
+            } else {
+                sourceElement = document.getElementById('contractAddress');
+                textToCopy = sourceElement.textContent;
+            }
+
+            if (!textToCopy || textToCopy === 'Enter a domain name to see the hex data' || textToCopy === 'Invalid input: Use letters and numbers only, 1-15 characters') {
+                status.textContent = `No valid ${type === 'hex' ? 'hex data' : 'address'} to copy`;
+                dogMessage.textContent = getRandomMessage('copyFailed', type);
+                return;
+            }
+
+            // Try Clipboard API first
+            if (navigator.clipboard && navigator.clipboard.write) {
+                navigator.clipboard.write(textToCopy).then(() => {
+                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
+                    dogMessage.textContent = getRandomMessage('copied', type);
+                }).catch((error) => {
+                    console.error(`Clipboard API copy ${type} failed:`, error);
+                    tryFallbackCopy(textToCopy, type, status, dogMessage);
+                });
+            } else {
+                tryFallbackCopy(textToCopy, type, status, dogMessage);
+            }
+        }
+
+        function tryFallbackCopy(text, type, status, dogMessage) {
+            // Fallback to document.execCommand
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
+                    dogMessage.textContent = getRandomMessage('copied', type);
+                } else {
+                    throw new Error('execCommand copy failed');
+                }
+            } catch (error) {
+                console.error(`Fallback copy ${type} failed:`, error);
+                status.textContent = `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}. Select and copy manually.`;
+                dogMessage.textContent = getRandomMessage('copyFailed', type);
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('copyHexButton').disabled = true;
+            document.getElementById('copyAddressButton').disabled = false;
+            document.getElementById('dogMessage').textContent = getRandomMessage('default', contracts[selectedDomain].suffix);
+        });
+    </script>
+</body>
+</html>
