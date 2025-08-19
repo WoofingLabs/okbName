@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OKB Domain Name Batch Minting - X Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #121212; 
+            color: #E6E6E6; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.5; 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            background: #1A1A1A; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #cccccc; 
+            font-size: clamp(1.8em, 5vw, 2.5em); 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+        .section { 
+            background: #222222; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+        }
+        h2 { 
+            color: #cccccc; 
+            font-size: clamp(1.2em, 3.5vw, 1.6em); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        .button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            background: #444444; 
+            color: #777777; 
+            cursor: not-allowed; 
+        }
+        textarea, input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            background: #2A2A2A; 
+            color: #E6E6E6; 
+            font-size: 1em; 
+            resize: vertical; 
+        }
+        textarea { 
+            min-height: 150px; 
+        }
+        textarea::placeholder, input::placeholder { 
+            color: #666666; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 0.9em; 
+            color: #cccccc; 
+            white-space: pre-wrap; 
+        }
+        .wallet-info { 
+            color: #cccccc; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .batch-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        .batch-table th, .batch-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #333333; 
+        }
+        .batch-table th { 
+            background: #2A2A2A; 
+            color: #cccccc; 
+            font-weight: 600; 
+        }
+        .copy-btn { 
+            background: #333333; 
+            color: #cccccc; 
+            padding: 6px 12px; 
+            font-size: 0.85em; 
+            border-radius: 4px; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .copy-btn:hover { 
+            background: #555555; 
+        }
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 0.85em; 
+            color: #666666; 
+        }
+        .footer a { 
+            color: #cccccc; 
+            text-decoration: none; 
+        }
+        .footer a:hover { 
+            text-decoration: underline; 
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .section { padding: 15px; }
+            .button { width: 100%; padding: 12px; margin: 8px 0; }
+            .batch-table { display: block; overflow-x: auto; }
+            .batch-table th, .batch-table td { font-size: 0.85em; padding: 10px; }
+            .batch-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #333333; }
+            .batch-table td { display: block; text-align: left; }
+            .batch-table td button { width: 100%; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OKB Domain Name Batch Minting</h1>
+        <div class="section">
+            <h2>X Layer Configuration</h2>
+            <input type="text" id="rpcUrl" value="https://rpc.xlayer.tech" placeholder="X Layer RPC URL">
+            <div id="networkStatus" class="status">Enter RPC URL and click Test Connection...</div>
+            <button id="testConnection" class="button">Test Connection</button>
+        </div>
+        <div class="section" id="batchMintSection">
+            <h2>Batch Mint OKB Domains</h2>
+            <textarea id="privateKeys" placeholder="Enter one private key per line (with '0x' prefix, max 200)"></textarea>
+            <textarea id="domainIds" placeholder="Enter one domain ID per line (1-15 alphanumeric characters)"></textarea>
+            <label>Gas Price (Gwei): <input type="number" id="gasPrice" value="3.2" step="0.1" min="0"></label>
+            <label>Gas Limit: <input type="number" id="gasLimit" value="600000" min="21000"></label>
+            <label>Process Interval (seconds): <input type="number" id="processInterval" value="5" min="1"></label>
+            <button id="batchMint" class="button">Start Batch Minting</button>
+            <button id="retryFailed" class="button" disabled>Retry Failed Mints</button>
+            <div id="batchStatus" class="status"></div>
+            <table class="batch-table">
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Domain ID</th>
+                        <th>Status</th>
+                        <th>Tx Hash</th>
+                    </tr>
+                </thead>
+                <tbody id="batchResults"></tbody>
+            </table>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://www.okx.com/web3/explorer/xlayer" target="_blank">X Layer</a> | OKB Domain Name Batch Minting © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.4/dist/web3.min.js"></script>
+    <script>
+        const domainContractAddress = "0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E";
+        const domainContractABI = [
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "_id", "type": "string" }
+                ],
+                "name": "mint",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    { "indexed": true, "internalType": "address", "name": "minter", "type": "address" },
+                    { "indexed": false, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+                    { "indexed": false, "internalType": "string", "name": "id", "type": "string" }
+                ],
+                "name": "Minted",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "name": "idsMintedLower",
+                "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "", "type": "address" }
+                ],
+                "name": "ownerToTokenId",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        const xLayer = {
+            chainId: 196,
+            name: 'X Layer mainnet',
+            explorerUrl: 'https://www.okx.com/web3/explorer/xlayer',
+            rpcUrl: 'https://rpc.xlayer.tech'
+        };
+
+        let web3, failedMints = [];
+
+        async function testConnection() {
+            const status = document.getElementById('networkStatus');
+            const rpcUrl = document.getElementById('rpcUrl').value.trim();
+            status.innerText = "Testing connection...";
+            try {
+                web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl));
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 196) {
+                    status.innerText = `Error: Connected to chain ID ${chainId}, expected X Layer (196).`;
+                    return false;
+                }
+                status.innerText = "Connected to X Layer successfully!";
+                return true;
+            } catch (error) {
+                status.innerText = "Failed to connect: " + error.message;
+                return false;
+            }
+        }
+
+        async function batchMint() {
+            const section = document.getElementById('batchMintSection');
+            const status = document.getElementById('batchStatus');
+            const resultsBody = document.getElementById('batchResults');
+            const privateKeys = document.getElementById('privateKeys').value.trim().split('\n').filter(key => key.trim());
+            const domainIds = document.getElementById('domainIds').value.trim().split('\n').filter(id => id.trim());
+            const gasPriceGwei = parseFloat(document.getElementById('gasPrice').value);
+            const gasLimit = parseInt(document.getElementById('gasLimit').value);
+            const processInterval = parseInt(document.getElementById('processInterval').value) * 1000;
+
+            // Validations
+            if (!web3) {
+                status.innerText = "Please test RPC connection first!";
+                return;
+            }
+            if (privateKeys.length > 200) {
+                status.innerText = "Error: Maximum 200 private keys allowed.";
+                return;
+            }
+            if (privateKeys.length === 0) {
+                status.innerText = "Error: No private keys provided.";
+                return;
+            }
+            if (domainIds.length === 0) {
+                status.innerText = "Error: No domain IDs provided.";
+                return;
+            }
+            if (domainIds.some(id => id.length > 15 || !/^[a-zA-Z0-9]+$/.test(id))) {
+                status.innerText = "Error: All domain IDs must be 1-15 alphanumeric characters.";
+                return;
+            }
+            if (isNaN(gasPriceGwei) || gasPriceGwei <= 0) {
+                status.innerText = "Error: Invalid Gas Price.";
+                return;
+            }
+            if (isNaN(gasLimit) || gasLimit < 21000) {
+                status.innerText = "Error: Invalid Gas Limit (minimum 21000).";
+                return;
+            }
+            if (isNaN(processInterval) || processInterval < 1000) {
+                status.innerText = "Error: Invalid Process Interval (minimum 1 second).";
+                return;
+            }
+
+            section.classList.add('loading');
+            status.innerText = "Starting batch minting...\n";
+            resultsBody.innerHTML = '';
+            failedMints = [];
+            const domainContract = new web3.eth.Contract(domainContractABI, domainContractAddress);
+            const gasPriceWei = web3.utils.toWei(gasPriceGwei.toString(), 'gwei');
+
+            for (let i = 0; i < Math.min(privateKeys.length, domainIds.length); i++) {
+                const pk = privateKeys[i].trim();
+                const domainId = domainIds[i].trim();
+                let account;
+                try {
+                    account = web3.eth.accounts.privateKeyToAccount(pk);
+                } catch (error) {
+                    status.innerText += `Invalid private key: ${pk}\n`;
+                    continue;
+                }
+                web3.eth.accounts.wallet.add(account);
+                const address = account.address;
+                status.innerText += `Processing ${address} for ${domainId}.okb...\n`;
+
+                // Create table row
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${address.slice(0, 6)}...${address.slice(-4)}</td>
+                    <td>${domainId}.okb</td>
+                    <td>Processing...</td>
+                    <td>-</td>
+                `;
+                resultsBody.appendChild(row);
+
+                try {
+                    // Check if address has already minted
+                    const hasMinted = await domainContract.methods.ownerToTokenId(address).call();
+                    if (hasMinted != 0) {
+                        row.cells[2].innerText = "Already minted";
+                        failedMints.push({ address, domainId });
+                        continue;
+                    }
+                    // Check if domain ID is taken
+                    const isMinted = await domainContract.methods.idsMintedLower(domainId.toLowerCase()).call();
+                    if (isMinted) {
+                        row.cells[2].innerText = "Domain already taken";
+                        failedMints.push({ address, domainId });
+                        continue;
+                    }
+                    // Estimate gas
+                    const gas = await domainContract.methods.mint(domainId).estimateGas({ from: address }).catch(() => gasLimit);
+                    // Mint domain
+                    const tx = await domainContract.methods.mint(domainId).send({
+                        from: address,
+                        gas: Math.floor(gas * 1.2),
+                        gasPrice: gasPriceWei
+                    });
+                    row.cells[2].innerText = "Success";
+                    row.cells[3].innerHTML = `<a href="${xLayer.explorerUrl}/tx/${tx.transactionHash}" target="_blank">${tx.transactionHash.slice(0, 6)}...${tx.transactionHash.slice(-4)}</a>`;
+                } catch (error) {
+                    console.error(error);
+                    row.cells[2].innerText = "Failed: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+                    failedMints.push({ address, domainId });
+                }
+                web3.eth.accounts.wallet.remove(address);
+                await new Promise(resolve => setTimeout(resolve, processInterval));
+            }
+            status.innerText += "Batch minting completed!\n";
+            document.getElementById('retryFailed').disabled = failedMints.length === 0;
+            section.classList.remove('loading');
+        }
+
+        async function retryFailedMints() {
+            if (failedMints.length === 0) {
+                document.getElementById('batchStatus').innerText = "No failed mints to retry.";
+                return;
+            }
+            const newDomainIds = document.getElementById('domainIds').value.trim().split('\n').filter(id => id.trim());
+            if (newDomainIds.length === 0) {
+                document.getElementById('batchStatus').innerText = "Error: No new domain IDs provided for retry.";
+                return;
+            }
+            if (newDomainIds.some(id => id.length > 15 || !/^[a-zA-Z0-9]+$/.test(id))) {
+                document.getElementById('batchStatus').innerText = "Error: All domain IDs must be 1-15 alphanumeric characters.";
+                return;
+            }
+            const privateKeys = failedMints.map(f => {
+                const account = web3.eth.accounts.privateKeyToAccount(f.address);
+                return account.privateKey;
+            });
+            document.getElementById('privateKeys').value = privateKeys.join('\n');
+            document.getElementById('domainIds').value = newDomainIds.join('\n');
+            await batchMint();
+        }
+
+        document.getElementById('testConnection').addEventListener('click', testConnection);
+        document.getElementById('batchMint').addEventListener('click', batchMint);
+        document.getElementById('retryFailed').addEventListener('click', retryFailedMints);
+    </script>
+</body>
+</html>
