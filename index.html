@@ -38,7 +38,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             border-radius: var(--border-radius);
             padding: 20px;
-            position: relative;
         }
         .header {
             background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
@@ -74,11 +73,27 @@
             background: var(--input-bg);
             padding: 15px;
             border-radius: var(--border-radius);
+            margin-bottom: 15px;
             word-break: break-all;
             font-size: 0.9em;
             color: var(--text-color);
         }
         .output-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #ff9100;
+        }
+        .address-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: var(--text-color);
+            word-break: break-all;
+        }
+        .address-box label {
             display: block;
             font-size: 0.9em;
             margin-bottom: 5px;
@@ -94,10 +109,22 @@
             font-weight: bold;
             width: 100%;
             transition: background 0.2s;
-            margin-top: 10px;
+            margin-bottom: 10px;
         }
         .copy-button:hover {
             background: #e68a00;
+        }
+        .copy-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .instructions {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-size: 0.9em;
+            color: #ff9100;
+            margin-bottom: 15px;
         }
         .status {
             margin-top: 10px;
@@ -135,11 +162,19 @@
             <label>Domain Name (e.g., jace)</label>
             <input type="text" id="domainInput" placeholder="Enter domain name" oninput="convertToHex()">
         </div>
-        <div class="output-box" id="hexOutput">
+        <div class="output-box">
             <label>Hex Data</label>
-            <span>Enter a domain name to see the hex data</span>
+            <span id="hexOutputText">Enter a domain name to see the hex data</span>
         </div>
-        <button class="copy-button" id="copyButton" onclick="copyToClipboard()">Copy Hex Data</button>
+        <button class="copy-button" id="copyHexButton" onclick="copyToClipboard('hex')">Copy Hex Data</button>
+        <div class="address-box">
+            <label>Contract Address</label>
+            <span id="contractAddress">0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E</span>
+        </div>
+        <button class="copy-button" id="copyAddressButton" onclick="copyToClipboard('address')">Copy Contract Address</button>
+        <div class="instructions">
+            To register your .okb domain, send a transaction with 0 OKB to the contract address above, using the generated hex data as the transaction data (msg.data).
+        </div>
         <div class="status" id="status"></div>
         <div class="dog-section">
             <img src="https://static.oklink.com/cdn/assets/imgs/235/4EC890FA53A98FFF.png" alt="WoofingJace">
@@ -166,17 +201,17 @@
                 `Bow wow! ${name}.okb hex is fetched, copy it, hooman!`,
                 `Yip! Hex for ${name}.okb is here, ready to roll!`
             ],
-            copied: [
-                "Woof woof! Hex copied to clipboard, pup!",
-                "Arf! Copied the hex, go register that OKB domain!",
-                "Bow wow! Hex is in your clipboard, Jace champ!",
-                "Yip yip! Hex copied, you’re pawsome, hooman!"
+            copied: (type) => [
+                `Woof woof! ${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard, pup!`,
+                `Arf! Copied the ${type === 'hex' ? 'hex' : 'address'}, go register that OKB domain!`,
+                `Bow wow! ${type === 'hex' ? 'Hex' : 'Address'} is in your clipboard, Jace champ!`,
+                `Yip yip! ${type === 'hex' ? 'Hex' : 'Address'} copied, you’re pawsome, hooman!`
             ],
-            copyFailed: [
-                "Grrr... Copy failed, try again, Jace friend!",
-                "Woof? Couldn’t copy, give it another go, pup!",
-                "Arf! Clipboard’s hiding, retry copying, hooman!",
-                "Ruff! Copy didn’t work, let’s try that again!"
+            copyFailed: (type) => [
+                `Grrr... ${type === 'hex' ? 'Hex data' : 'Contract address'} copy failed, try again, Jace friend!`,
+                `Woof? Couldn’t copy the ${type === 'hex' ? 'hex' : 'address'}, give it another go, pup!`,
+                `Arf! Clipboard’s hiding the ${type === 'hex' ? 'hex' : 'address'}, retry copying, hooman!`,
+                `Ruff! ${type === 'hex' ? 'Hex' : 'Address'} copy didn’t work, let’s try that again!`
             ]
         };
 
@@ -205,24 +240,26 @@
 
         function convertToHex() {
             const input = document.getElementById('domainInput').value.trim();
-            const output = document.getElementById('hexOutput');
+            const output = document.getElementById('hexOutputText');
             const status = document.getElementById('status');
             const dogMessage = document.getElementById('dogMessage');
-            const copyButton = document.getElementById('copyButton');
+            const copyHexButton = document.getElementById('copyHexButton');
 
             if (!input) {
-                output.innerHTML = '<label>Hex Data</label><span>Enter a domain name to see the hex data</span>';
-                status.innerText = '';
-                dogMessage.innerText = getRandomMessage('default');
-                copyButton.disabled = true;
+                output.textContent = 'Enter a domain name to see the hex data';
+                output.dataset.hex = '';
+                status.textContent = '';
+                dogMessage.textContent = getRandomMessage('default');
+                copyHexButton.disabled = true;
                 return;
             }
 
             if (!isValidString(input)) {
-                output.innerHTML = '<label>Hex Data</label><span>Invalid input: Use letters and numbers only, 1-15 characters</span>';
-                status.innerText = 'Invalid input';
-                dogMessage.innerText = getRandomMessage('invalid');
-                copyButton.disabled = true;
+                output.textContent = 'Invalid input: Use letters and numbers only, 1-15 characters';
+                output.dataset.hex = '';
+                status.textContent = 'Invalid input';
+                dogMessage.textContent = getRandomMessage('invalid');
+                copyHexButton.disabled = true;
                 return;
             }
 
@@ -230,30 +267,47 @@
             const hexData = '0x' + Array.from(new TextEncoder().encode(inscription))
                 .map(byte => byte.toString(16).padStart(2, '0'))
                 .join('');
-            output.innerHTML = `<label>Hex Data</label><span>${hexData}</span>`;
-            status.innerText = `Hex data for ${input}.okb generated`;
-            dogMessage.innerText = getRandomMessage('success', input);
-            copyButton.disabled = false;
+            output.textContent = hexData;
+            output.dataset.hex = hexData;
+            status.textContent = `Hex data for ${input}.okb generated`;
+            dogMessage.textContent = getRandomMessage('success', input);
+            copyHexButton.disabled = false;
         }
 
-        function copyToClipboard() {
-            const output = document.getElementById('hexOutput').getElementsByTagName('span')[0];
+        function copyToClipboard(type) {
             const status = document.getElementById('status');
             const dogMessage = document.getElementById('dogMessage');
-            if (output && output.innerText !== 'Enter a domain name to see the hex data' && output.innerText !== 'Invalid input: Use letters and numbers only, 1-15 characters') {
-                navigator.clipboard.write(output.innerText).then(() => {
-                    status.innerText = 'Hex data copied to clipboard';
-                    dogMessage.innerText = getRandomMessage('copied');
-                }).catch(() => {
-                    status.innerText = 'Failed to copy hex data';
-                    dogMessage.innerText = getRandomMessage('copyFailed');
-                });
+            let textToCopy;
+            let sourceElement;
+
+            if (type === 'hex') {
+                sourceElement = document.getElementById('hexOutputText');
+                textToCopy = sourceElement.dataset.hex || '';
+            } else {
+                sourceElement = document.getElementById('contractAddress');
+                textToCopy = sourceElement.textContent;
             }
+
+            if (!textToCopy || textToCopy === 'Enter a domain name to see the hex data' || textToCopy === 'Invalid input: Use letters and numbers only, 1-15 characters') {
+                status.textContent = `No valid ${type === 'hex' ? 'hex data' : 'address'} to copy`;
+                dogMessage.textContent = getRandomMessage('copyFailed', type);
+                return;
+            }
+
+            navigator.clipboard.write(textToCopy).then(() => {
+                status.textContent = `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`;
+                dogMessage.textContent = getRandomMessage('copied', type);
+            }).catch((error) => {
+                console.error(`Copy ${type} failed:`, error);
+                status.textContent = `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}`;
+                dogMessage.textContent = getRandomMessage('copyFailed', type);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('copyButton').disabled = true;
-            document.getElementById('dogMessage').innerText = getRandomMessage('default');
+            document.getElementById('copyHexButton').disabled = true;
+            document.getElementById('copyAddressButton').disabled = false;
+            document.getElementById('dogMessage').textContent = getRandomMessage('default');
         });
     </script>
 </body>
