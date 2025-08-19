@@ -161,9 +161,9 @@
         </div>
         <div class="section" id="batchMintSection">
             <h2>Batch Mint OKB Domains</h2>
-            <textarea id="privateKeys" placeholder="Enter one private key per line (with '0x' prefix, max 200)"></textarea>
-            <textarea id="domainIds" placeholder="Enter one domain ID per line (1-15 alphanumeric characters)"></textarea>
-            <label>Gas Price (Gwei): <input type="number" id="gasPrice" value="3.2" step="0.1" min="0"></label>
+            <textarea id="privateKeys" placeholder="Enter one private key per line (with '0x' prefix, max 200)\ne.g.\n0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"></textarea>
+            <textarea id="domainIds" placeholder="Enter one domain ID per line (1-15 alphanumeric characters)\ne.g.\njace123\ntest456"></textarea>
+            <label>Gas Price (Gwei): <input type="number" id="gasPrice" value="1.2" step="0.1" min="0"></label>
             <label>Gas Limit: <input type="number" id="gasLimit" value="600000" min="21000"></label>
             <label>Process Interval (seconds): <input type="number" id="processInterval" value="5" min="1"></label>
             <button id="batchMint" class="button">Start Batch Minting</button>
@@ -316,7 +316,6 @@
                     status.innerText += `Invalid private key: ${pk}\n`;
                     continue;
                 }
-                web3.eth.accounts.wallet.add(account);
                 const address = account.address;
                 status.innerText += `Processing ${address} for ${domainId}.okb...\n`;
 
@@ -334,14 +333,20 @@
                     // Check if address has already minted
                     const hasMinted = await domainContract.methods.ownerToTokenId(address).call();
                     if (hasMinted != 0) {
-                        row.cells[2].innerText = "Already minted";
-                        failedMints.push({ address, domainId });
-                        continue;
+                        row.cells[2].innerText = "Address already minted";
+                        continue; // Skip this address
                     }
                     // Check if domain ID is taken
                     const isMinted = await domainContract.methods.idsMintedLower(domainId.toLowerCase()).call();
                     if (isMinted) {
                         row.cells[2].innerText = "Domain already taken";
+                        failedMints.push({ address, domainId });
+                        continue;
+                    }
+                    // Check balance
+                    const balance = await web3.eth.getBalance(address);
+                    if (web3.utils.toBN(balance).lt(web3.utils.toBN(gasPriceWei).mul(web3.utils.toBN(gasLimit)))) {
+                        row.cells[2].innerText = "Insufficient OKB balance";
                         failedMints.push({ address, domainId });
                         continue;
                     }
@@ -383,9 +388,13 @@
                 return;
             }
             const privateKeys = failedMints.map(f => {
-                const account = web3.eth.accounts.privateKeyToAccount(f.address);
-                return account.privateKey;
-            });
+                try {
+                    const account = web3.eth.accounts.privateKeyToAccount(f.address);
+                    return account.privateKey;
+                } catch {
+                    return null;
+                }
+            }).filter(pk => pk);
             document.getElementById('privateKeys').value = privateKeys.join('\n');
             document.getElementById('domainIds').value = newDomainIds.join('\n');
             await batchMint();
