@@ -173,7 +173,7 @@
             body { padding: 10px; }
             .container { padding: 15px; }
             .header { font-size: 1.1em; }
-            .toggle-button { padding: 8px 15px; font-size: 0.8em; }
+            .toggle-button { padding: 8px 12px; font-size: 0.8em; }
             .dog-section img { width: 50px; height: 50px; }
             .dog-message { font-size: 0.8em; }
         }
@@ -185,6 +185,7 @@
         <div class="toggle-buttons">
             <button class="toggle-button active" id="starButton" onclick="selectDomain('star')">.star</button>
             <button class="toggle-button" id="xdogButton" onclick="selectDomain('xdog')">.xdog</button>
+            <button class="toggle-button" id="okbButton" onclick="selectDomain('okb')">.okb</button>
         </div>
         <div class="input-box">
             <label id="inputLabel">Domain Name (e.g., jace)</label>
@@ -216,12 +217,20 @@
             star: {
                 address: '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD',
                 suffix: 'star',
-                protocol: 'starname'
+                protocol: 'starname',
+                currency: 'ETH'
             },
             xdog: {
                 address: '0x68B6387628b4096af034c3a9de3073AB18E744C2',
                 suffix: 'xdog',
-                protocol: 'xdogname'
+                protocol: 'xdogname',
+                currency: 'ETH'
+            },
+            okb: {
+                address: '0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E',
+                suffix: 'okb',
+                protocol: 'okbname',
+                currency: 'OKB'
             }
         };
 
@@ -271,6 +280,7 @@
             selectedDomain = domain;
             const starButton = document.getElementById('starButton');
             const xdogButton = document.getElementById('xdogButton');
+            const okbButton = document.getElementById('okbButton');
             const contractAddress = document.getElementById('contractAddress');
             const instructions = document.getElementById('instructions');
             const inputLabel = document.getElementById('inputLabel');
@@ -280,12 +290,13 @@
             // Update button states
             starButton.classList.toggle('active', domain === 'star');
             xdogButton.classList.toggle('active', domain === 'xdog');
+            okbButton.classList.toggle('active', domain === 'okb');
 
             // Update contract address
             contractAddress.textContent = contracts[domain].address;
 
             // Update instructions
-            instructions.textContent = `To register your .${contracts[domain].suffix} domain, send a transaction with 0 ETH to the contract address above, using the generated hex data as the transaction data (msg.data).`;
+            instructions.textContent = `To register your .${contracts[domain].suffix} domain, send a transaction with 0 ${contracts[domain].currency} to the contract address above, using the generated hex data as the transaction data (msg.data).`;
 
             // Update input label
             inputLabel.textContent = `Domain Name (e.g., jace)`;
