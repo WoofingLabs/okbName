@@ -139,6 +139,7 @@
             border-radius: 4px; 
             border: none; 
             cursor: pointer; 
+            margin-right: 5px; 
         }
         .copy-btn:hover, .view-btn:hover { 
             background: #555555; 
@@ -225,8 +226,8 @@
             .nft-table { display: block; overflow-x: auto; }
             .nft-table th, .nft-table td { font-size: 0.85em; padding: 10px; }
             .nft-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #333333; }
-            .nft-table td { display: block; text-align: left; }
-            .nft-table td button { width: 100%; margin: 5px 0; }
+            .nft-table td { display: flex; justify-content: space-between; align-items: center; }
+            .nft-table td button { width: auto; margin: 5px 0; }
             .how-it-works ul { padding-left: 15px; }
             .how-it-works li { font-size: 0.85em; }
         }
@@ -239,7 +240,7 @@
             <h2>Connect to X Layer</h2>
             <button id="connectButton" class="button">Connect Wallet</button>
             <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
-            <div id="networkStatus" class="status">Click to connect...</div>
+            <div id="networkStatus" class="status"></div>
         </div>
         <div class="section" id="mintDomainSection">
             <h2>Mint Domain Name</h2>
@@ -295,7 +296,7 @@
             <h2>How It Works?</h2>
             <p>Mint your unique domain name NFT on X Layer with our Launchpad! It’s simple and fast:</p>
             <ul>
-                <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure you have enough <span class="highlight">OKB</span> for .okb/.okx or <span class="highlight">ETH</span> for .star/.xdog/.dao/.ai/.x gas fees.</li>
+                <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure you have enough <span class="highlight">OKB</span> for .okb or <span class="highlight">ETH</span> for .star, .xdog, .okx, .dao, .ai, .x gas fees.</li>
                 <li><strong>Select Domain Type</strong>: Choose .okb, .star, .xdog, .okx, .dao, .ai, or .x using the toggle buttons.</li>
                 <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123”). The NFT will be minted with the selected suffix.</li>
                 <li><strong>Manual Registration</strong>: Copy the hex data and contract address to register manually via a wallet transaction with 0 ETH/OKB and the hex data as msg.data.</li>
@@ -341,7 +342,7 @@
                 address: '0x11dd582923862d11e547638765b1ead8c1899c43',
                 suffix: 'okx',
                 protocol: 'okxname',
-                currency: 'OKB',
+                currency: 'ETH',
                 name: 'OKX Inscription Domain Name',
                 symbol: 'DOKX'
             },
@@ -373,9 +374,7 @@
 
         const domainContractABI = [
             {
-                "inputs": [
-                    { "internalType": "string", "name": "_id", "type": "string" }
-                ],
+                "inputs": [{ "internalType": "string", "name": "_id", "type": "string" }],
                 "name": "mint",
                 "outputs": [],
                 "stateMutability": "nonpayable",
@@ -392,18 +391,14 @@
                 "type": "event"
             },
             {
-                "inputs": [
-                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-                ],
+                "inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
                 "name": "tokenName",
                 "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
-                "inputs": [
-                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-                ],
+                "inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
                 "name": "tokenURI",
                 "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
                 "stateMutability": "view",
@@ -448,27 +443,21 @@
                 "type": "function"
             },
             {
-                "inputs": [
-                    { "internalType": "string", "name": "", "type": "string" }
-                ],
+                "inputs": [{ "internalType": "string", "name": "", "type": "string" }],
                 "name": "idsMintedLower",
                 "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
-                "inputs": [
-                    { "internalType": "address", "name": "owner", "type": "address" }
-                ],
+                "inputs": [{ "internalType": "address", "name": "owner", "type": "address" }],
                 "name": "balanceOf",
                 "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
-                "inputs": [
-                    { "internalType": "address", "name": "", "type": "address" }
-                ],
+                "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
                 "name": "ownerToTokenId",
                 "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
                 "stateMutability": "view",
@@ -486,7 +475,7 @@
         // Utility Functions
         const setStatus = (elementId, message, isError = false) => {
             const element = document.getElementById(elementId);
-            element.innerText = message;
+            element.innerHTML = message;
             element.style.color = isError ? '#ff5555' : '#cccccc';
         };
 
@@ -495,9 +484,14 @@
             section.classList.toggle('loading', isLoading);
         };
 
+        const sanitizeInput = (input) => {
+            return input.replace(/[<>&"]/g, '');
+        };
+
         // Wallet Connection
         async function connectWallet() {
             setStatus('networkStatus', 'Connecting...');
+            toggleLoading('connectButton', true);
             try {
                 if (!window.ethereum) {
                     throw new Error('No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.');
@@ -536,8 +530,10 @@
                 setStatus('networkStatus', 'Connected to X Layer');
                 fetchMyDomains();
             } catch (error) {
-                console.error(error);
+                console.error('Connect wallet error:', error);
                 setStatus('networkStatus', `Failed to connect: ${error.message}`, true);
+            } finally {
+                toggleLoading('connectButton', false);
             }
         }
 
@@ -559,13 +555,12 @@
 
         // Input Validation
         function isValidString(str) {
-            const strBytes = new TextEncoder().encode(str);
-            return strBytes.length > 0 && strBytes.length <= 15 && /^[a-zA-Z0-9]+$/.test(str);
+            return str.length > 0 && str.length <= 15 && /^[a-zA-Z0-9]+$/.test(str);
         }
 
         // Hex Conversion
         function convertToHex() {
-            const input = document.getElementById('domainId').value.trim();
+            const input = sanitizeInput(document.getElementById('domainId').value.trim());
             const output = document.getElementById('hexOutputText');
             const copyHexButton = document.getElementById('copyHexButton');
 
@@ -625,16 +620,13 @@
         // Mint Domain
         async function mintDomain() {
             const section = document.getElementById('mintDomainSection');
-            const domainId = document.getElementById('domainId').value.trim();
+            const domainId = sanitizeInput(document.getElementById('domainId').value.trim());
             if (!isValidString(domainId)) {
-                setStatus('mintStatus', 'Invalid Domain ID. Use 1-15 alphanumeric characters.', true);
+                setStatus('mintStatus', 'Invalid Domain ID: Use 1-15 alphanumeric characters', true);
                 return;
             }
             if (!accounts) {
-                setStatus('mintStatus', 'Please connect your wallet first!', true);
-                return;
-            }
-            if (!confirm(`Are you sure you want to mint ${domainId}.${contracts[selectedDomain].suffix}?`)) {
+                setStatus('mintStatus', 'Please connect your wallet first', true);
                 return;
             }
             toggleLoading('mintDomainSection', true);
@@ -643,26 +635,33 @@
                 const domainIdLower = domainId.toLowerCase();
                 const isMinted = await domainContract.methods.idsMintedLower(domainIdLower).call();
                 if (isMinted) {
-                    setStatus('mintStatus', 'Domain ID already minted!', true);
+                    setStatus('mintStatus', 'This domain ID is already taken', true);
                     return;
                 }
                 const hasMinted = await domainContract.methods.ownerToTokenId(accounts[0]).call();
                 if (hasMinted != 0) {
-                    setStatus('mintStatus', 'This address has already minted a domain!', true);
+                    setStatus('mintStatus', 'This wallet has already minted a domain for this suffix', true);
                     return;
                 }
                 setStatus('mintStatus', 'Minting domain NFT...');
-                const gas = await domainContract.methods.mint(domainId).estimateGas({ from: accounts[0] }).catch(() => 600000);
+                const gasEstimate = await domainContract.methods.mint(domainId).estimateGas({ from: accounts[0] }).catch(() => 300000);
                 const tx = await domainContract.methods.mint(domainId).send({
                     from: accounts[0],
-                    gas: Math.floor(gas * 1.2)
+                    gas: Math.floor(gasEstimate * 1.5)
                 });
                 setStatus('mintStatus', `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${xLayer.explorerUrl}/token/${contracts[selectedDomain].address}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`);
                 document.getElementById('domainId').value = '';
+                convertToHex();
                 fetchMyDomains();
             } catch (error) {
-                console.error(error);
-                setStatus('mintStatus', `Failed to mint domain: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message}`, true);
+                console.error('Mint error:', error);
+                let errorMessage = 'Failed to mint domain';
+                if (error.message.includes('revert')) {
+                    errorMessage = error.message.split('revert')[1]?.trim() || 'Unknown error';
+                } else if (error.message.includes('denied')) {
+                    errorMessage = 'Transaction rejected by user';
+                }
+                setStatus('mintStatus', errorMessage, true);
             } finally {
                 toggleLoading('mintDomainSection', false);
             }
@@ -671,7 +670,7 @@
         // Fetch Domains
         async function fetchMyDomains() {
             if (!accounts) {
-                setStatus('domainsStatus', 'Please connect your wallet first!', true);
+                setStatus('domainsStatus', 'Please connect your wallet first', true);
                 return;
             }
             toggleLoading('myDomainsSection', true);
@@ -682,9 +681,8 @@
                 let foundDomains = false;
                 for (const domain in contracts) {
                     const contract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
-                    const balance = await contract.methods.balanceOf(accounts[0]).call();
-                    if (balance > 0) {
-                        const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], 0).call();
+                    const tokenId = await contract.methods.ownerToTokenId(accounts[0]).call();
+                    if (tokenId != 0) {
                         const tokenName = await contract.methods.tokenName(tokenId).call();
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -698,9 +696,9 @@
                         foundDomains = true;
                     }
                 }
-                setStatus('domainsStatus', foundDomains ? 'Domains loaded successfully!' : 'No domains minted yet!');
+                setStatus('domainsStatus', foundDomains ? 'Domains loaded successfully' : 'No domains minted yet');
             } catch (error) {
-                console.error(error);
+                console.error('Fetch domains error:', error);
                 setStatus('domainsStatus', `Failed to fetch domains: ${error.message}`, true);
             } finally {
                 toggleLoading('myDomainsSection', false);
@@ -716,7 +714,7 @@
                 document.getElementById('nftImage').src = json.image;
                 document.getElementById('nftPreview').style.display = 'block';
             } catch (error) {
-                console.error(error);
+                console.error('View NFT error:', error);
                 setStatus('domainsStatus', `Failed to load NFT preview: ${error.message}`, true);
             }
         }
@@ -733,10 +731,12 @@
                 document.getElementById('domainId').value = '';
                 convertToHex();
             });
+            document.getElementById('copyHexButton').addEventListener('click', () => copyToClipboard('hex'));
+            document.getElementById('copyAddressButton').addEventListener('click', () => copyToClipboard('address'));
             if (!window.location.protocol.startsWith('http')) {
-                setStatus('networkStatus', 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.', true);
+                setStatus('networkStatus', 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask', true);
             } else if (!window.ethereum) {
-                setStatus('networkStatus', 'No wallet detected. Please install <a href="https://metamask.io">MetaMask</a>.', true);
+                setStatus('networkStatus', 'No wallet detected. Please install <a href="https://metamask.io">MetaMask</a>', true);
             }
         });
     </script>
