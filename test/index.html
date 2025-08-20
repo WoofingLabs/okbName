@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Name Launchpad - X Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #121212; 
+            color: #E6E6E6; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.5; 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            background: #1A1A1A; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #cccccc; 
+            font-size: clamp(1.8em, 5vw, 2.5em); 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+        .section { 
+            background: #222222; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+        }
+        h2 { 
+            color: #cccccc; 
+            font-size: clamp(1.2em, 3.5vw, 1.6em); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        .toggle-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .toggle-button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
+        }
+        .toggle-button.active { 
+            background: #555555; 
+            transform: translateY(-2px); 
+        }
+        .toggle-button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
+        }
+        .button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            background: #444444; 
+            color: #777777; 
+            cursor: not-allowed; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            background: #2A2A2A; 
+            color: #E6E6E6; 
+            font-size: 1em; 
+        }
+        input::placeholder { 
+            color: #666666; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 0.9em; 
+            color: #cccccc; 
+        }
+        .wallet-info { 
+            color: #cccccc; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .nft-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        .nft-table th, .nft-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #333333; 
+        }
+        .nft-table th { 
+            background: #2A2A2A; 
+            color: #cccccc; 
+            font-weight: 600; 
+        }
+        .copy-btn, .view-btn { 
+            background: #333333; 
+            color: #cccccc; 
+            padding: 6px 12px; 
+            font-size: 0.85em; 
+            border-radius: 4px; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .copy-btn:hover, .view-btn:hover { 
+            background: #555555; 
+        }
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 10px;
+            border: 2px solid #cccccc;
+            border-radius: 50%;
+            border-top-color: #555555;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .nft-preview { 
+            margin-top: 15px; 
+            text-align: center; 
+        }
+        .nft-preview img { 
+            max-width: 100%; 
+            border: 1px solid #cccccc; 
+            border-radius: 8px; 
+        }
+        .output-box {
+            background: #2A2A2A;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            font-size: 0.9em;
+            color: #E6E6E6;
+        }
+        .output-box label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #cccccc;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 0.85em; 
+            color: #666666; 
+        }
+        .footer a { 
+            color: #cccccc; 
+            text-decoration: none; 
+        }
+        .footer a:hover { 
+            text-decoration: underline; 
+        }
+        .how-it-works { 
+            background: #222222; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+            margin-top: 20px; 
+        }
+        .how-it-works ul { 
+            list-style-type: disc; 
+            padding-left: 20px; 
+            margin-top: 10px; 
+        }
+        .how-it-works li { 
+            margin-bottom: 12px; 
+            font-size: 0.9em; 
+        }
+        .how-it-works .highlight { 
+            color: #cccccc; 
+            font-weight: 600; 
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
+            .button, .toggle-button { width: 100%; padding: 12px; margin: 8px 0; }
+            .nft-table { display: block; overflow-x: auto; }
+            .nft-table th, .nft-table td { font-size: 0.85em; padding: 10px; }
+            .nft-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #333333; }
+            .nft-table td { display: block; text-align: left; }
+            .nft-table td button { width: 100%; margin: 5px 0; }
+            .how-it-works ul { padding-left: 15px; }
+            .how-it-works li { font-size: 0.85em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Domain Name Launchpad</h1>
+        <div class="section">
+            <h2>Connect to X Layer</h2>
+            <button id="connectButton" class="button">Connect Wallet</button>
+            <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
+            <div id="networkStatus" class="status">Click to connect...</div>
+        </div>
+        <div class="section" id="mintDomainSection">
+            <h2>Mint Domain Name</h2>
+            <div class="toggle-buttons">
+                <button class="toggle-button active" id="okbButton" onclick="selectDomain('okb')">.okb</button>
+                <button class="toggle-button" id="starButton" onclick="selectDomain('star')">.star</button>
+                <button class="toggle-button" id="xdogButton" onclick="selectDomain('xdog')">.xdog</button>
+                <button class="toggle-button" id="okxButton" onclick="selectDomain('okx')">.okx</button>
+                <button class="toggle-button" id="daoButton" onclick="selectDomain('dao')">.dao</button>
+                <button class="toggle-button" id="aiButton" onclick="selectDomain('ai')">.ai</button>
+                <button class="toggle-button" id="xButton" onclick="selectDomain('x')">.x</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="domainId" placeholder="Domain ID (e.g., jace123)" oninput="convertToHex()">
+                <button id="clearInputButton" class="button">Clear</button>
+            </div>
+            <div class="output-box">
+                <label>Hex Data</label>
+                <span id="hexOutputText">Enter a domain name to see the hex data</span>
+            </div>
+            <button id="copyHexButton" class="button" disabled>Copy Hex Data</button>
+            <button id="mintDomain" class="button">Mint Domain NFT</button>
+            <div class="output-box">
+                <label>Contract Address</label>
+                <span id="contractAddress">0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E</span>
+            </div>
+            <button id="copyAddressButton" class="button">Copy Contract Address</button>
+            <div id="mintStatus" class="status"></div>
+        </div>
+        <div class="section" id="myDomainsSection">
+            <h2>My Domains</h2>
+            <div style="display: flex; gap: 10px;">
+                <button id="fetchMyDomains" class="button">Fetch My Domains</button>
+                <button id="refreshDomains" class="button">Refresh</button>
+            </div>
+            <table class="nft-table">
+                <thead>
+                    <tr>
+                        <th>Token ID</th>
+                        <th>Domain Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="domainsBody"></tbody>
+            </table>
+            <div id="domainsStatus" class="status"></div>
+            <div class="nft-preview" id="nftPreview" style="display: none;">
+                <h2>NFT Preview</h2>
+                <img id="nftImage" src="" alt="NFT Preview">
+            </div>
+        </div>
+        <div class="how-it-works">
+            <h2>How It Works?</h2>
+            <p>Mint your unique domain name NFT on X Layer with our Launchpad! It’s simple and fast:</p>
+            <ul>
+                <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure you have enough <span class="highlight">OKB</span> for .okb/.okx or <span class="highlight">ETH</span> for .star/.xdog/.dao/.ai/.x gas fees.</li>
+                <li><strong>Select Domain Type</strong>: Choose .okb, .star, .xdog, .okx, .dao, .ai, or .x using the toggle buttons.</li>
+                <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123”). The NFT will be minted with the selected suffix.</li>
+                <li><strong>Manual Registration</strong>: Copy the hex data and contract address to register manually via a wallet transaction with 0 ETH/OKB and the hex data as msg.data.</li>
+                <li><strong>View Your Domains</strong>: Fetch your minted domain NFTs, including token IDs and full domain names (e.g., jace123.okb).</li>
+                <li><strong>Secure & Unique</strong>: Each address can mint only one domain per contract, and each ID is unique (case-insensitive). Built on X Layer for low fees and secure NFT creation.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://www.okx.com/web3/explorer/xlayer" target="_blank">X Layer</a> | Domain Name Launchpad © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, domainContract;
+        let selectedDomain = 'okb'; // Default to .okb
+
+        const contracts = {
+            okb: {
+                address: '0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E',
+                suffix: 'okb',
+                protocol: 'okbname',
+                currency: 'OKB',
+                name: 'OKB Inscription Domain Name',
+                symbol: 'DOKB'
+            },
+            star: {
+                address: '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD',
+                suffix: 'star',
+                protocol: 'starname',
+                currency: 'ETH',
+                name: 'Star Inscription Domain Name',
+                symbol: 'DSTAR'
+            },
+            xdog: {
+                address: '0x68B6387628b4096af034c3a9de3073AB18E744C2',
+                suffix: 'xdog',
+                protocol: 'xdogname',
+                currency: 'ETH',
+                name: 'XDog Inscription Domain Name',
+                symbol: 'DXDOG'
+            },
+            okx: {
+                address: '0x11dd582923862d11e547638765b1ead8c1899c43',
+                suffix: 'okx',
+                protocol: 'okxname',
+                currency: 'OKB',
+                name: 'OKX Inscription Domain Name',
+                symbol: 'DOKX'
+            },
+            dao: {
+                address: '0x3590b3bf3e75cf357233cd80a15e53f8ed3df5b0',
+                suffix: 'dao',
+                protocol: 'daoname',
+                currency: 'ETH',
+                name: 'DAO Inscription Domain Name',
+                symbol: 'DDAO'
+            },
+            ai: {
+                address: '0x2c536e72aa25ead620c269262af50103db76ce78',
+                suffix: 'ai',
+                protocol: 'ainame',
+                currency: 'ETH',
+                name: 'AI Inscription Domain Name',
+                symbol: 'DAI'
+            },
+            x: {
+                address: '0xe0876f16409d81e564e7f17f4e65931614ef2530',
+                suffix: 'x',
+                protocol: 'xname',
+                currency: 'ETH',
+                name: 'X Inscription Domain Name',
+                symbol: 'DX'
+            }
+        };
+
+        const domainContractABI = [
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "_id", "type": "string" }
+                ],
+                "name": "mint",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    { "indexed": true, "internalType": "address", "name": "minter", "type": "address" },
+                    { "indexed": false, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+                    { "indexed": false, "internalType": "string", "name": "id", "type": "string" }
+                ],
+                "name": "Minted",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+                ],
+                "name": "tokenName",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+                ],
+                "name": "tokenURI",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "owner", "type": "address" },
+                    { "internalType": "uint256", "name": "index", "type": "uint256" }
+                ],
+                "name": "tokenOfOwnerByIndex",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SUFFIX",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "name": "idsMintedLower",
+                "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "owner", "type": "address" }
+                ],
+                "name": "balanceOf",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "", "type": "address" }
+                ],
+                "name": "ownerToTokenId",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const xLayer = {
+            chainId: 196,
+            name: 'X Layer mainnet',
+            explorerUrl: 'https://www.okx.com/web3/explorer/xlayer',
+            rpcUrl: 'https://rpc.xlayer.tech'
+        };
+
+        // Utility Functions
+        const setStatus = (elementId, message, isError = false) => {
+            const element = document.getElementById(elementId);
+            element.innerText = message;
+            element.style.color = isError ? '#ff5555' : '#cccccc';
+        };
+
+        const toggleLoading = (sectionId, isLoading) => {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('loading', isLoading);
+        };
+
+        // Wallet Connection
+        async function connectWallet() {
+            setStatus('networkStatus', 'Connecting...');
+            try {
+                if (!window.ethereum) {
+                    throw new Error('No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.');
+                }
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) {
+                    throw new Error('Please unlock or connect your wallet.');
+                }
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== xLayer.chainId) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xc4' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0xc4',
+                                    chainName: xLayer.name,
+                                    nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
+                                    rpcUrls: [xLayer.rpcUrl],
+                                    blockExplorerUrls: [xLayer.explorerUrl]
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('walletAddress').innerText = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                domainContract = new web3.eth.Contract(domainContractABI, contracts[selectedDomain].address);
+                setStatus('networkStatus', 'Connected to X Layer');
+                fetchMyDomains();
+            } catch (error) {
+                console.error(error);
+                setStatus('networkStatus', `Failed to connect: ${error.message}`, true);
+            }
+        }
+
+        // Domain Selection
+        function selectDomain(domain) {
+            selectedDomain = domain;
+            const buttons = ['okb', 'star', 'xdog', 'okx', 'dao', 'ai', 'x'];
+            buttons.forEach(btn => {
+                document.getElementById(`${btn}Button`).classList.toggle('active', btn === domain);
+            });
+            document.getElementById('contractAddress').textContent = contracts[domain].address;
+            if (web3 && accounts) {
+                domainContract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
+            }
+            document.getElementById('domainId').value = '';
+            setStatus('mintStatus', '');
+            convertToHex();
+        }
+
+        // Input Validation
+        function isValidString(str) {
+            const strBytes = new TextEncoder().encode(str);
+            return strBytes.length > 0 && strBytes.length <= 15 && /^[a-zA-Z0-9]+$/.test(str);
+        }
+
+        // Hex Conversion
+        function convertToHex() {
+            const input = document.getElementById('domainId').value.trim();
+            const output = document.getElementById('hexOutputText');
+            const copyHexButton = document.getElementById('copyHexButton');
+
+            if (!input) {
+                output.textContent = 'Enter a domain name to see the hex data';
+                output.dataset.hex = '';
+                setStatus('mintStatus', '');
+                copyHexButton.disabled = true;
+                return;
+            }
+
+            if (!isValidString(input)) {
+                output.textContent = 'Invalid input: Use letters and numbers only, 1-15 characters';
+                output.dataset.hex = '';
+                setStatus('mintStatus', 'Invalid input', true);
+                copyHexButton.disabled = true;
+                return;
+            }
+
+            const inscription = `data:,{"p":"${contracts[selectedDomain].protocol}","op":"reg","name":"${input}.${contracts[selectedDomain].suffix}"}`;
+            const hexData = '0x' + Array.from(new TextEncoder().encode(inscription))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+            output.textContent = hexData;
+            output.dataset.hex = hexData;
+            setStatus('mintStatus', `Hex data for ${input}.${contracts[selectedDomain].suffix} generated`);
+            copyHexButton.disabled = false;
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(type) {
+            const status = document.getElementById('mintStatus');
+            let textToCopy;
+            let sourceElement;
+
+            if (type === 'hex') {
+                sourceElement = document.getElementById('hexOutputText');
+                textToCopy = sourceElement.dataset.hex || '';
+            } else {
+                sourceElement = document.getElementById('contractAddress');
+                textToCopy = sourceElement.textContent;
+            }
+
+            if (!textToCopy || textToCopy === 'Enter a domain name to see the hex data' || textToCopy === 'Invalid input: Use letters and numbers only, 1-15 characters') {
+                setStatus('mintStatus', `No valid ${type === 'hex' ? 'hex data' : 'address'} to copy`, true);
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                setStatus('mintStatus', `${type === 'hex' ? 'Hex data' : 'Contract address'} copied to clipboard`);
+            }).catch(error => {
+                console.error(`Copy ${type} failed:`, error);
+                setStatus('mintStatus', `Failed to copy ${type === 'hex' ? 'hex data' : 'contract address'}`, true);
+            });
+        }
+
+        // Mint Domain
+        async function mintDomain() {
+            const section = document.getElementById('mintDomainSection');
+            const domainId = document.getElementById('domainId').value.trim();
+            if (!isValidString(domainId)) {
+                setStatus('mintStatus', 'Invalid Domain ID. Use 1-15 alphanumeric characters.', true);
+                return;
+            }
+            if (!accounts) {
+                setStatus('mintStatus', 'Please connect your wallet first!', true);
+                return;
+            }
+            if (!confirm(`Are you sure you want to mint ${domainId}.${contracts[selectedDomain].suffix}?`)) {
+                return;
+            }
+            toggleLoading('mintDomainSection', true);
+            setStatus('mintStatus', 'Checking domain availability...');
+            try {
+                const domainIdLower = domainId.toLowerCase();
+                const isMinted = await domainContract.methods.idsMintedLower(domainIdLower).call();
+                if (isMinted) {
+                    setStatus('mintStatus', 'Domain ID already minted!', true);
+                    return;
+                }
+                const hasMinted = await domainContract.methods.ownerToTokenId(accounts[0]).call();
+                if (hasMinted != 0) {
+                    setStatus('mintStatus', 'This address has already minted a domain!', true);
+                    return;
+                }
+                setStatus('mintStatus', 'Minting domain NFT...');
+                const gas = await domainContract.methods.mint(domainId).estimateGas({ from: accounts[0] }).catch(() => 600000);
+                const tx = await domainContract.methods.mint(domainId).send({
+                    from: accounts[0],
+                    gas: Math.floor(gas * 1.2)
+                });
+                setStatus('mintStatus', `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${xLayer.explorerUrl}/token/${contracts[selectedDomain].address}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`);
+                document.getElementById('domainId').value = '';
+                fetchMyDomains();
+            } catch (error) {
+                console.error(error);
+                setStatus('mintStatus', `Failed to mint domain: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message}`, true);
+            } finally {
+                toggleLoading('mintDomainSection', false);
+            }
+        }
+
+        // Fetch Domains
+        async function fetchMyDomains() {
+            if (!accounts) {
+                setStatus('domainsStatus', 'Please connect your wallet first!', true);
+                return;
+            }
+            toggleLoading('myDomainsSection', true);
+            setStatus('domainsStatus', 'Fetching your domains...');
+            try {
+                const domainsBody = document.getElementById('domainsBody');
+                domainsBody.innerHTML = '';
+                let foundDomains = false;
+                for (const domain in contracts) {
+                    const contract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
+                    const balance = await contract.methods.balanceOf(accounts[0]).call();
+                    if (balance > 0) {
+                        const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], 0).call();
+                        const tokenName = await contract.methods.tokenName(tokenId).call();
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${tokenId}</td>
+                            <td>${tokenName}</td>
+                            <td>
+                                <button class="view-btn" onclick="viewNFT(${tokenId}, '${domain}')">View</button>
+                            </td>
+                        `;
+                        domainsBody.appendChild(row);
+                        foundDomains = true;
+                    }
+                }
+                setStatus('domainsStatus', foundDomains ? 'Domains loaded successfully!' : 'No domains minted yet!');
+            } catch (error) {
+                console.error(error);
+                setStatus('domainsStatus', `Failed to fetch domains: ${error.message}`, true);
+            } finally {
+                toggleLoading('myDomainsSection', false);
+            }
+        }
+
+        // View NFT
+        async function viewNFT(tokenId, domain) {
+            try {
+                const contract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
+                const tokenURI = await contract.methods.tokenURI(tokenId).call();
+                const json = JSON.parse(atob(tokenURI.split(',')[1]));
+                document.getElementById('nftImage').src = json.image;
+                document.getElementById('nftPreview').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                setStatus('domainsStatus', `Failed to load NFT preview: ${error.message}`, true);
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('copyHexButton').disabled = true;
+            document.getElementById('copyAddressButton').disabled = false;
+            document.getElementById('connectButton').addEventListener('click', connectWallet);
+            document.getElementById('mintDomain').addEventListener('click', mintDomain);
+            document.getElementById('fetchMyDomains').addEventListener('click', fetchMyDomains);
+            document.getElementById('refreshDomains').addEventListener('click', fetchMyDomains);
+            document.getElementById('clearInputButton').addEventListener('click', () => {
+                document.getElementById('domainId').value = '';
+                convertToHex();
+            });
+            if (!window.location.protocol.startsWith('http')) {
+                setStatus('networkStatus', 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.', true);
+            } else if (!window.ethereum) {
+                setStatus('networkStatus', 'No wallet detected. Please install <a href="https://metamask.io">MetaMask</a>.', true);
+            }
+        });
+    </script>
+</body>
+</html>
