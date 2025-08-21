@@ -590,51 +590,6 @@ const resolverContractABI = [
             }
         }
 
-async function bindDomain(contractAddress, tokenId) {
-    const section = document.getElementById('myDomainsSection');
-    const status = document.getElementById('domainsStatus');
-    try {
-        section.classList.add('loading');
-        status.innerText = `Binding NFT ${tokenId}...`;
-
-        // Verify ownership and approval
-        const contract = new web3.eth.Contract(domainContractABI, contractAddress);
-        const owner = await contract.methods.ownerOf(tokenId).call();
-        const approved = await contract.methods.getApproved(tokenId).call();
-        if (owner.toLowerCase() !== accounts[0].toLowerCase()) {
-            status.innerText = "You do not own this NFT!";
-            return;
-        }
-        if (approved.toLowerCase() !== resolverAddress.toLowerCase()) {
-            status.innerText = "Resolver not approved for this NFT! Please approve first.";
-            return;
-        }
-
-        // Check if address is already bound
-        const resolver = new web3.eth.Contract(resolverContractABI, resolverAddress);
-        const currentTokenId = await resolver.methods.addressToTokenId(accounts[0]).call();
-        if (currentTokenId != 0) {
-            status.innerText = "This address is already bound to another NFT!";
-            return;
-        }
-
-        // Execute binding
-        const gas = await resolver.methods.bindDomain(contractAddress, tokenId).estimateGas({ from: accounts[0] }).catch(() => 200000);
-        const tx = await resolver.methods.bindDomain(contractAddress, tokenId).send({
-            from: accounts[0],
-            gas: Math.floor(gas * 1.2)
-        });
-        status.innerText = `NFT ${tokenId} bound successfully`;
-        fetchMyDomains();
-        fetchResolvedDomains();
-    } catch (error) {
-        console.error(error);
-        status.innerText = "Failed to bind NFT: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
-    } finally {
-        section.classList.remove('loading');
-    }
-}
-
 async function unbindDomain(tokenId) {
     const section = document.getElementById('myResolvedDomainsSection');
     const status = document.getElementById('resolvedDomainsStatus');
@@ -642,15 +597,8 @@ async function unbindDomain(tokenId) {
         section.classList.add('loading');
         status.innerText = `Unbinding NFT ${tokenId}...`;
 
-        // Verify the caller is the binder
+        // Execute unbinding without additional checks
         const resolver = new web3.eth.Contract(resolverContractABI, resolverAddress);
-        const boundBy = await resolver.methods.tokenBoundBy(tokenId).call();
-        if (boundBy.toLowerCase() !== accounts[0].toLowerCase()) {
-            status.innerText = "You are not the binder of this NFT!";
-            return;
-        }
-
-        // Execute unbinding
         const gas = await resolver.methods.unbindDomain(tokenId).estimateGas({ from: accounts[0] }).catch(() => 200000);
         await resolver.methods.unbindDomain(tokenId).send({
             from: accounts[0],
