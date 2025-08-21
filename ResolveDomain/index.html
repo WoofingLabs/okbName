@@ -626,8 +626,7 @@
                 status.innerText = `Resolving domain ${domainName}...`;
                 const address = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
                 status.innerText = `Domain ${domainName} resolved to ${address.slice(0, 6)}...${address.slice(-4)}`;
-                // Update the specific row's bound address
-                const row = document.querySelector(`tr[data-token-id="${tokenId}"][data-contract="${contractAddress}"]`);
+                const row = document.querySelector(`tr[data-token-id="${tokenId}"][data-contract="${contractAddress.toLowerCase()}"]`);
                 if (row) {
                     const boundAddressCell = row.querySelector('.bound-address');
                     if (boundAddressCell) {
@@ -676,7 +675,7 @@
                     for (let i = 0; i < balance; i++) {
                         const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], i).call();
                         const tokenName = await contract.methods.tokenName(tokenId).call();
-                        const isBound = await resolverContract.methods.isDomainBound(tokenId).call();
+                        const isBound = await resolverContract.methods.isDomainBound(tokenId).call({ from: contracts[domain].address });
                         const approved = await contract.methods.getApproved(tokenId).call();
                         const isApproved = approved.toLowerCase() === resolverAddress.toLowerCase();
                         let boundAddress = 'Not bound';
@@ -691,7 +690,7 @@
 
                         const row = document.createElement('tr');
                         row.setAttribute('data-token-id', tokenId);
-                        row.setAttribute('data-contract', contracts[domain].address);
+                        row.setAttribute('data-contract', contracts[domain].address.toLowerCase());
                         row.innerHTML = `
                             <td>${contracts[domain].suffix.toUpperCase()}</td>
                             <td>${tokenId}</td>
