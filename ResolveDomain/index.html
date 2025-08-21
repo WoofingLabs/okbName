@@ -683,59 +683,70 @@
             }
         }
 
-        async function fetchResolvedDomains() {
-            if (!accounts) {
-                document.getElementById('resolvedDomainsStatus').innerText = "Please connect your wallet first!";
-                return;
-            }
-            const section = document.getElementById('myResolvedDomainsSection');
-            const status = document.getElementById('resolvedDomainsStatus');
-            const resolvedDomainsBody = document.getElementById('resolvedDomainsBody');
-            resolvedDomainsBody.innerHTML = '';
-            let foundDomains = false;
+async function fetchResolvedDomains() {
+    if (!accounts) {
+        document.getElementById('resolvedDomainsStatus').innerText = "Please connect your wallet first!";
+        return;
+    }
+    const section = document.getElementById('myResolvedDomainsSection');
+    const status = document.getElementById('resolvedDomainsStatus');
+    const resolvedDomainsBody = document.getElementById('resolvedDomainsBody');
+    resolvedDomainsBody.innerHTML = '';
+    let foundDomains = false;
 
-            try {
-                section.classList.add('loading');
-                status.innerText = "Fetching resolved domains...";
+    try {
+        section.classList.add('loading');
+        status.innerText = "Fetching resolved domains...";
 
-                const [domainName, contractAddress] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
-                if (domainName && domainName !== "None") {
-                    const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
-                    if (contract) {
-                        const contractInstance = new web3.eth.Contract(domainContractABI, contractAddress);
-                        let tokenId = 0;
-                        const balance = await contractInstance.methods.balanceOf(accounts[0]).call();
-                        for (let i = 0; i < balance; i++) {
-                            const tid = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], i).call();
-                            if ((await contractInstance.methods.tokenName(tid).call()) === domainName) {
-                                tokenId = tid;
-                                break;
-                            }
+        // Try to get the bound domain
+        try {
+            const [domainName, contractAddress] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
+            if (domainName && domainName !== "None") {
+                const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
+                if (contract) {
+                    const contractInstance = new web3.eth.Contract(domainContractABI, contractAddress);
+                    let tokenId = 0;
+                    const balance = await contractInstance.methods.balanceOf(accounts[0]).call();
+                    for (let i = 0; i < balance; i++) {
+                        const tid = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], i).call();
+                        if ((await contractInstance.methods.tokenName(tid).call()) === domainName) {
+                            tokenId = tid;
+                            break;
                         }
-                        const boundAddress = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
-
-                        const row = document.createElement('tr');
-                        row.setAttribute('data-token-id', tokenId);
-                        row.setAttribute('data-contract', contractAddress.toLowerCase());
-                        row.innerHTML = `
-                            <td>${contract.suffix.toUpperCase()}</td>
-                            <td>${tokenId}</td>
-                            <td>${domainName}</td>
-                            <td>${boundAddress ? `${boundAddress.slice(0, 6)}...${boundAddress.slice(-4)}` : 'Not bound'}</td>
-                            <td><button class="action-btn" onclick="unbindDomain(${tokenId})">Unbind</button></td>
-                        `;
-                        resolvedDomainsBody.appendChild(row);
-                        foundDomains = true;
                     }
+                    const boundAddress = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
+
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-token-id', tokenId);
+                    row.setAttribute('data-contract', contractAddress.toLowerCase());
+                    row.innerHTML = `
+                        <td>${contract.suffix.toUpperCase()}</td>
+                        <td>${tokenId}</td>
+                        <td>${domainName}</td>
+                        <td>${boundAddress ? `${boundAddress.slice(0, 6)}...${boundAddress.slice(-4)}` : 'Not bound'}</td>
+                        <td><button class="action-btn" onclick="unbindDomain(${tokenId})">Unbind</button></td>
+                    `;
+                    resolvedDomainsBody.appendChild(row);
+                    foundDomains = true;
                 }
-                status.innerText = foundDomains ? "Resolved domains loaded successfully!" : "No domains resolved yet!";
-            } catch (error) {
-                console.error(error);
-                status.innerText = "Failed to fetch resolved domains: " + error.message;
-            } finally {
-                section.classList.remove('loading');
+            }
+        } catch (error) {
+            if (error.message.includes("execution reverted: Address not bound to any NFT")) {
+                status.innerText = "No domains resolved yet!";
+            } else {
+                throw error;
             }
         }
+        if (!foundDomains) {
+            status.innerText = "No domains resolved yet!";
+        }
+    } catch (error) {
+        console.error(error);
+        status.innerText = "Failed to fetch resolved domains: " + error.message;
+    } finally {
+        section.classList.remove('loading');
+    }
+}
 
         async function viewNFT(tokenId, domain) {
             try {
