@@ -5,47 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>X Layer Inscription Web Wallet</title>
     <style>
-        body { background: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #000000; color: #ffffff; padding: 20px; border-radius: 8px; }
+        body { background: #000000; font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #ffffff; }
+        .container { max-width: 600px; margin: 0 auto; background: #1a1a1a; padding: 20px; border-radius: 8px; }
         h1 { text-align: center; font-size: 24px; margin-bottom: 20px; }
         .section { margin-bottom: 20px; }
         label { display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 8px; margin-bottom: 10px; background: #1a1a1a; border: 1px solid #333333; color: #ffffff; border-radius: 4px; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; background: #2d2d2d; border: 1px solid #444444; color: #ffffff; border-radius: 4px; }
         button { background: #333333; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
         button:hover { background: #444444; }
         .percent-buttons { margin: 10px 0; }
         .percent-buttons button { margin-right: 5px; }
         .status { margin-top: 10px; font-size: 14px; }
         .balance { margin: 10px 0; }
+        .disabled { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>X Layer Inscription Web Wallet</h1>
         <div class="section">
+            <button id="connectWallet" class="button">Connect Wallet</button>
+            <div id="walletStatus" class="status">Not connected</div>
+        </div>
+        <div class="section">
             <label for="domainInput">Enter Domain (e.g., jace.okb):</label>
-            <input type="text" id="domainInput" placeholder="e.g., jace.okb">
-            <button onclick="resolveAddress()">Resolve Address</button>
+            <input type="text" id="domainInput" placeholder="e.g., jace.okb" disabled>
+            <button id="resolveButton" onclick="resolveAddress()" disabled>Resolve Address</button>
             <div id="addressResult" class="status"></div>
         </div>
         <div class="section">
             <label for="tokenContract">Enter ERC20 Token Contract Address:</label>
-            <input type="text" id="tokenContract" placeholder="e.g., 0x...">
-            <button onclick="fetchBalance()">Check Balance</button>
+            <input type="text" id="tokenContract" placeholder="e.g., 0x..." disabled>
+            <button id="balanceButton" onclick="fetchBalance()" disabled>Check Balance</button>
             <div id="balanceResult" class="balance"></div>
         </div>
         <div class="section">
             <label for="toAddress">Send To Address:</label>
-            <input type="text" id="toAddress" placeholder="e.g., 0x...">
+            <input type="text" id="toAddress" placeholder="e.g., 0x..." disabled>
             <label for="amount">Amount:</label>
-            <input type="number" id="amount" placeholder="0.0" step="0.0001">
+            <input type="number" id="amount" placeholder="0.0" step="0.0001" disabled>
             <div class="percent-buttons">
-                <button onclick="setPercent(25)">25%</button>
-                <button onclick="setPercent(50)">50%</button>
-                <button onclick="setPercent(75)">75%</button>
-                <button onclick="setPercent(100)">100%</button>
+                <button onclick="setPercent(25)" disabled>25%</button>
+                <button onclick="setPercent(50)" disabled>50%</button>
+                <button onclick="setPercent(75)" disabled>75%</button>
+                <button onclick="setPercent(100)" disabled>100%</button>
             </div>
-            <button onclick="sendTransaction()">Send</button>
+            <button id="sendButton" onclick="sendTransaction()" disabled>Send</button>
             <div id="transactionStatus" class="status"></div>
         </div>
     </div>
@@ -71,21 +76,34 @@
 
         async function connectWallet() {
             if (!window.ethereum) {
-                document.getElementById('addressResult').innerText = 'Please install MetaMask.';
+                document.getElementById('walletStatus').innerText = 'Please install MetaMask.';
                 return;
             }
             try {
                 web3 = new Web3(window.ethereum);
-                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
                 const chainId = await web3.eth.getChainId();
                 if (chainId !== 196) {
                     await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xc4' }] });
                 }
+                accounts = await web3.eth.getAccounts();
                 resolverContract = new web3.eth.Contract(resolverContractABI, resolverAddress);
-                document.getElementById('addressResult').innerText = `Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                document.getElementById('walletStatus').innerText = `Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                enableInputs(true);
             } catch (error) {
-                document.getElementById('addressResult').innerText = 'Failed to connect: ' + error.message;
+                document.getElementById('walletStatus').innerText = 'Failed to connect: ' + error.message;
             }
+        }
+
+        function enableInputs(enabled) {
+            document.getElementById('domainInput').disabled = !enabled;
+            document.getElementById('resolveButton').disabled = !enabled;
+            document.getElementById('tokenContract').disabled = !enabled;
+            document.getElementById('balanceButton').disabled = !enabled;
+            document.getElementById('toAddress').disabled = !enabled;
+            document.getElementById('amount').disabled = !enabled;
+            document.querySelectorAll('.percent-buttons button').forEach(btn => btn.disabled = !enabled);
+            document.getElementById('sendButton').disabled = !enabled;
         }
 
         async function resolveAddress() {
@@ -99,7 +117,14 @@
                 return;
             }
             try {
-                const [contractAddress] = Object.values(resolverContract.methods.getDomainByAddress(accounts[0]).call());
+                let contractAddress;
+                if (domain.endsWith('.okb')) contractAddress = '0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E';
+                else if (domain.endsWith('.star')) contractAddress = '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD';
+                else if (domain.endsWith('.xdog')) contractAddress = '0x68B6387628b4096af034c3a9de3073AB18E744C2';
+                else {
+                    document.getElementById('addressResult').innerText = 'Unsupported domain suffix.';
+                    return;
+                }
                 const address = await resolverContract.methods.getAddressByDomain(contractAddress, domain).call();
                 document.getElementById('addressResult').innerText = address ? `Resolved Address: ${address}` : 'Domain not found or not bound.';
             } catch (error) {
@@ -168,7 +193,7 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', connectWallet);
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
     </script>
 </body>
 </html>
