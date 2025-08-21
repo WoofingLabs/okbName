@@ -168,17 +168,18 @@
             {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"ownerToTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
         ];
 
-        const resolverContractABI = [
-            {"inputs":[{"internalType":"address","name":"contractAddress","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"bindDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"unbindDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"contractAddress","type":"address"},{"internalType":"string","name":"domainName","type":"string"}],"name":"getAddressByDomain","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-            {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getDomainByAddress","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"isDomainBound","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"DomainBound","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"DomainUnbound","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"Parsed","type":"event"},
-            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenBoundBy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
-        ];
+const resolverContractABI = [
+    {"inputs":[{"internalType":"address","name":"contractAddress","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"bindDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"unbindDomain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"contractAddress","type":"address"},{"internalType":"string","name":"domainName","type":"string"}],"name":"getAddressByDomain","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getDomainByAddress","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"isDomainBound","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"DomainBound","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"DomainUnbound","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"contractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"domainName","type":"string"}],"name":"Parsed","type":"event"},
+    {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenBoundBy","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"addressToTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+];
 
         const xLayer = { chainId: 196, name: 'X Layer mainnet', explorerUrl: 'https://www.okx.com/web3/explorer/xlayer', rpcUrl: 'https://rpc.xlayer.tech' };
 
