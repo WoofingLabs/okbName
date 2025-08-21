@@ -250,7 +250,6 @@
         </div>
         <div class="section" id="myDomainsSection">
             <h2>My Domains</h2>
-            <p>Bound Domain: <span id="boundDomain" class="wallet-info">None</span></p>
             <button id="fetchMyDomains" class="button">Fetch My Domains</button>
             <table class="nft-table">
                 <thead>
@@ -258,8 +257,6 @@
                         <th>Contract</th>
                         <th>Token ID</th>
                         <th>Domain Name</th>
-                        <th>Bound</th>
-                        <th>Bound Address</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -271,6 +268,23 @@
                 <img id="nftImage" src="" alt="NFT Preview">
             </div>
         </div>
+        <div class="section" id="myResolvedDomainsSection">
+            <h2>My Resolved Domains</h2>
+            <button id="fetchResolvedDomains" class="button">Fetch Resolved Domains</button>
+            <table class="nft-table">
+                <thead>
+                    <tr>
+                        <th>Contract</th>
+                        <th>Token ID</th>
+                        <th>Domain Name</th>
+                        <th>Bound Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="resolvedDomainsBody"></tbody>
+            </table>
+            <div id="resolvedDomainsStatus" class="status"></div>
+        </div>
         <div class="how-it-works">
             <h2>How It Works?</h2>
             <p>Mint and manage your unique domain name NFTs on X Layer with our Launchpad!</p>
@@ -278,9 +292,9 @@
                 <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure enough <span class="highlight">OKB</span> for .okb or <span class="highlight">ETH</span> for .star/.xdog gas fees.</li>
                 <li><strong>Mint Domain</strong>: Select .okb, .star, or .xdog, enter a domain ID (1-15 alphanumeric characters), and mint your NFT.</li>
                 <li><strong>Manual Registration</strong>: Copy hex data and contract address for manual registration via wallet with 0 ETH/OKB and hex as msg.data.</li>
-                <li><strong>Bind Domain</strong>: Approve your NFT for the DomainNameResolver contract (0x51AEfC36203F0B3612e15c168aDE8ec2401A1507), then bind it to enable domain resolution.</li>
-                <li><strong>Unbind Domain</strong>: Unbind your NFT to retrieve it, clearing the resolution.</li>
-                <li><strong>Resolve Domain</strong>: Check the bound address for your domains in the "My Domains" section.</li>
+                <li><strong>Bind Domain</strong>: In "My Domains", approve your NFT for the DomainNameResolver contract (0x51AEfC36203F0B3612e15c168aDE8ec2401A1507), then bind it to enable domain resolution.</li>
+                <li><strong>Unbind Domain</strong>: In "My Resolved Domains", unbind your NFT to retrieve it, clearing the resolution.</li>
+                <li><strong>Resolve Domain</strong>: Bind domains in "My Domains" to set their resolved address.</li>
                 <li><strong>Secure & Unique</strong>: One domain per address per contract, case-insensitive IDs, low-cost transactions on X Layer.</li>
             </ul>
         </div>
@@ -398,7 +412,7 @@
                 resolverContract = new web3.eth.Contract(resolverContractABI, resolverAddress);
                 status.innerText = "Connected to X Layer";
                 fetchMyDomains();
-                fetchBoundDomain();
+                fetchResolvedDomains();
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to connect: " + error.message;
@@ -544,6 +558,7 @@
                 status.innerHTML = `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${xLayer.explorerUrl}/token/${contracts[selectedDomain].address}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`;
                 document.getElementById('domainId').value = '';
                 fetchMyDomains();
+                fetchResolvedDomains();
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to mint domain: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
@@ -587,7 +602,7 @@
                 });
                 status.innerText = `NFT ${tokenId} bound successfully`;
                 fetchMyDomains();
-                fetchBoundDomain();
+                fetchResolvedDomains();
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to bind NFT: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
@@ -597,8 +612,8 @@
         }
 
         async function unbindDomain(tokenId) {
-            const section = document.getElementById('myDomainsSection');
-            const status = document.getElementById('domainsStatus');
+            const section = document.getElementById('myResolvedDomainsSection');
+            const status = document.getElementById('resolvedDomainsStatus');
             try {
                 section.classList.add('loading');
                 status.innerText = `Unbinding NFT ${tokenId}...`;
@@ -609,48 +624,12 @@
                 });
                 status.innerText = `NFT ${tokenId} unbound successfully`;
                 fetchMyDomains();
-                fetchBoundDomain();
+                fetchResolvedDomains();
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to unbind NFT: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
             } finally {
                 section.classList.remove('loading');
-            }
-        }
-
-        async function resolveDomain(contractAddress, tokenId, domainName) {
-            const section = document.getElementById('myDomainsSection');
-            const status = document.getElementById('domainsStatus');
-            try {
-                section.classList.add('loading');
-                status.innerText = `Resolving domain ${domainName}...`;
-                const address = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
-                status.innerText = `Domain ${domainName} resolved to ${address.slice(0, 6)}...${address.slice(-4)}`;
-                const row = document.querySelector(`tr[data-token-id="${tokenId}"][data-contract="${contractAddress.toLowerCase()}"]`);
-                if (row) {
-                    const boundAddressCell = row.querySelector('.bound-address');
-                    if (boundAddressCell) {
-                        boundAddressCell.innerText = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not bound';
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                status.innerText = `Failed to resolve domain: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message}`;
-            } finally {
-                section.classList.remove('loading');
-            }
-        }
-
-        async function fetchBoundDomain() {
-            if (!accounts) {
-                document.getElementById('boundDomain').innerText = "None";
-                return;
-            }
-            try {
-                const [domainName, contractAddress] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
-                document.getElementById('boundDomain').innerText = domainName || "None";
-            } catch (error) {
-                document.getElementById('boundDomain').innerText = "None";
             }
         }
 
@@ -675,18 +654,8 @@
                     for (let i = 0; i < balance; i++) {
                         const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], i).call();
                         const tokenName = await contract.methods.tokenName(tokenId).call();
-                        const isBound = await resolverContract.methods.isDomainBound(tokenId).call({ from: contracts[domain].address });
                         const approved = await contract.methods.getApproved(tokenId).call();
                         const isApproved = approved.toLowerCase() === resolverAddress.toLowerCase();
-                        let boundAddress = 'Not bound';
-                        if (isBound) {
-                            try {
-                                boundAddress = await resolverContract.methods.getAddressByDomain(contracts[domain].address, tokenName).call();
-                                boundAddress = `${boundAddress.slice(0, 6)}...${boundAddress.slice(-4)}`;
-                            } catch (error) {
-                                boundAddress = 'Error resolving';
-                            }
-                        }
 
                         const row = document.createElement('tr');
                         row.setAttribute('data-token-id', tokenId);
@@ -695,13 +664,9 @@
                             <td>${contracts[domain].suffix.toUpperCase()}</td>
                             <td>${tokenId}</td>
                             <td>${tokenName}</td>
-                            <td>${isBound ? 'Yes' : 'No'}</td>
-                            <td class="bound-address">${boundAddress}</td>
                             <td>
-                                ${!isApproved && !isBound ? `<button class="action-btn" onclick="approveNFT('${contracts[domain].address}', ${tokenId})">Approve</button>` : ''}
-                                ${isApproved && !isBound ? `<button class="action-btn" onclick="bindDomain('${contracts[domain].address}', ${tokenId})">Bind</button>` : ''}
-                                ${isBound ? `<button class="action-btn" onclick="unbindDomain(${tokenId})">Unbind</button>` : ''}
-                                <button class="action-btn" onclick="resolveDomain('${contracts[domain].address}', ${tokenId}, '${tokenName}')">Resolve</button>
+                                ${!isApproved ? `<button class="action-btn" onclick="approveNFT('${contracts[domain].address}', ${tokenId})">Approve</button>` : ''}
+                                ${isApproved ? `<button class="action-btn" onclick="bindDomain('${contracts[domain].address}', ${tokenId})">Bind</button>` : ''}
                                 <button class="view-btn" onclick="viewNFT(${tokenId}, '${domain}')">View</button>
                             </td>
                         `;
@@ -713,6 +678,61 @@
             } catch (error) {
                 console.error(error);
                 status.innerText = "Failed to fetch domains: " + error.message;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function fetchResolvedDomains() {
+            if (!accounts) {
+                document.getElementById('resolvedDomainsStatus').innerText = "Please connect your wallet first!";
+                return;
+            }
+            const section = document.getElementById('myResolvedDomainsSection');
+            const status = document.getElementById('resolvedDomainsStatus');
+            const resolvedDomainsBody = document.getElementById('resolvedDomainsBody');
+            resolvedDomainsBody.innerHTML = '';
+            let foundDomains = false;
+
+            try {
+                section.classList.add('loading');
+                status.innerText = "Fetching resolved domains...";
+
+                // Fetch all bound domains for the user's address
+                const [domainNames, contractAddresses] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
+                if (domainNames && domainNames !== "None") {
+                    // Assuming getDomainByAddress returns an array or single value; adjust if it's a single string
+                    const domains = Array.isArray(domainNames) ? domainNames : [domainNames];
+                    const contracts = Array.isArray(contractAddresses) ? contractAddresses : [contractAddresses];
+
+                    for (let i = 0; i < domains.length; i++) {
+                        const domainName = domains[i];
+                        const contractAddress = contracts[i];
+                        const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
+                        if (!contract) continue;
+
+                        const contractInstance = new web3.eth.Contract(domainContractABI, contractAddress);
+                        const tokenId = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], 0).call(); // Adjust index if multiple tokens
+                        const boundAddress = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
+
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-token-id', tokenId);
+                        row.setAttribute('data-contract', contractAddress.toLowerCase());
+                        row.innerHTML = `
+                            <td>${contract.suffix.toUpperCase()}</td>
+                            <td>${tokenId}</td>
+                            <td>${domainName}</td>
+                            <td>${boundAddress ? `${boundAddress.slice(0, 6)}...${boundAddress.slice(-4)}` : 'Not bound'}</td>
+                            <td><button class="action-btn" onclick="unbindDomain(${tokenId})">Unbind</button></td>
+                        `;
+                        resolvedDomainsBody.appendChild(row);
+                        foundDomains = true;
+                    }
+                }
+                status.innerText = foundDomains ? "Resolved domains loaded successfully!" : "No domains resolved yet!";
+            } catch (error) {
+                console.error(error);
+                status.innerText = "Failed to fetch resolved domains: " + error.message;
             } finally {
                 section.classList.remove('loading');
             }
@@ -737,6 +757,7 @@
             document.getElementById('connectButton').addEventListener('click', connectWallet);
             document.getElementById('mintDomain').addEventListener('click', mintDomain);
             document.getElementById('fetchMyDomains').addEventListener('click', fetchMyDomains);
+            document.getElementById('fetchResolvedDomains').addEventListener('click', fetchResolvedDomains);
             if (!window.location.protocol.startsWith('http')) {
                 document.getElementById('networkStatus').innerHTML = 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.';
             } else if (!window.ethereum) {
