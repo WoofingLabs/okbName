@@ -248,21 +248,6 @@
             <button id="copyAddressButton" class="button">Copy Contract Address</button>
             <div id="mintStatus" class="status"></div>
         </div>
-        <div class="section" id="resolveDomainSection">
-            <h2>Resolve Domain</h2>
-            <select id="resolveContract">
-                <option value="0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E">.okb</option>
-                <option value="0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD">.star</option>
-                <option value="0x68B6387628b4096af034c3a9de3073AB18E744C2">.xdog</option>
-            </select>
-            <input type="text" id="resolveDomainInput" placeholder="Enter domain (e.g., jace123.okb)">
-            <button id="resolveDomain" class="button">Resolve Domain</button>
-            <div class="output-box">
-                <label>Resolved Address</label>
-                <span id="resolvedAddress">Enter a domain to resolve</span>
-            </div>
-            <div id="resolveStatus" class="status"></div>
-        </div>
         <div class="section" id="myDomainsSection">
             <h2>My Domains</h2>
             <p>Bound Domain: <span id="boundDomain" class="wallet-info">None</span></p>
@@ -270,9 +255,11 @@
             <table class="nft-table">
                 <thead>
                     <tr>
+                        <th>Contract</th>
                         <th>Token ID</th>
                         <th>Domain Name</th>
                         <th>Bound</th>
+                        <th>Bound Address</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -293,7 +280,7 @@
                 <li><strong>Manual Registration</strong>: Copy hex data and contract address for manual registration via wallet with 0 ETH/OKB and hex as msg.data.</li>
                 <li><strong>Bind Domain</strong>: Approve your NFT for the DomainNameResolver contract (0x51AEfC36203F0B3612e15c168aDE8ec2401A1507), then bind it to enable domain resolution.</li>
                 <li><strong>Unbind Domain</strong>: Unbind your NFT to retrieve it, clearing the resolution.</li>
-                <li><strong>Resolve Domain</strong>: Query a domain (e.g., jace123.okb) to find its bound address, or check your bound domain.</li>
+                <li><strong>Resolve Domain</strong>: Check the bound address for your domains in the "My Domains" section.</li>
                 <li><strong>Secure & Unique</strong>: One domain per address per contract, case-insensitive IDs, low-cost transactions on X Layer.</li>
             </ul>
         </div>
@@ -631,48 +618,25 @@
             }
         }
 
-        async function resolveDomain() {
-            const section = document.getElementById('resolveDomainSection');
-            const status = document.getElementById('resolveStatus');
-            const contractAddress = document.getElementById('resolveContract').value;
-            const domainName = document.getElementById('resolveDomainInput').value.trim();
-            const selectedContract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
-            
-            if (!domainName) {
-                status.innerText = "Please enter a domain name";
-                return;
-            }
-            
-            // Validate domain suffix
-            const normalizedDomain = domainName.toLowerCase();
-            const expectedSuffix = selectedContract.suffix;
-            if (!normalizedDomain.endsWith('.' + expectedSuffix) && !normalizedDomain.endsWith(expectedSuffix)) {
-                status.innerText = `Invalid domain suffix. Expected .${expectedSuffix} for selected contract`;
-                return;
-            }
-            
-            // Remove suffix for validation
-            const domainWithoutSuffix = normalizedDomain.endsWith('.' + expectedSuffix)
-                ? normalizedDomain.slice(0, -(expectedSuffix.length + 1))
-                : normalizedDomain.slice(0, -expectedSuffix.length);
-            
-            if (!isValidString(domainWithoutSuffix)) {
-                status.innerText = "Invalid domain ID. Use 1-15 alphanumeric characters.";
-                return;
-            }
-
+        async function resolveDomain(contractAddress, tokenId, domainName) {
+            const section = document.getElementById('myDomainsSection');
+            const status = document.getElementById('domainsStatus');
             try {
                 section.classList.add('loading');
-                status.innerText = "Resolving domain...";
+                status.innerText = `Resolving domain ${domainName}...`;
                 const address = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
-                document.getElementById('resolvedAddress').innerText = address;
                 status.innerText = `Domain ${domainName} resolved to ${address.slice(0, 6)}...${address.slice(-4)}`;
+                // Update the specific row's bound address
+                const row = document.querySelector(`tr[data-token-id="${tokenId}"][data-contract="${contractAddress}"]`);
+                if (row) {
+                    const boundAddressCell = row.querySelector('.bound-address');
+                    if (boundAddressCell) {
+                        boundAddressCell.innerText = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not bound';
+                    }
+                }
             } catch (error) {
                 console.error(error);
-                const errorMessage = error.message.includes('revert') 
-                    ? error.message.split('revert')[1]?.trim() || 'Unknown reason'
-                    : error.message;
-                status.innerText = `Failed to resolve domain: ${errorMessage}`;
+                status.innerText = `Failed to resolve domain: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message}`;
             } finally {
                 section.classList.remove('loading');
             }
@@ -698,30 +662,47 @@
             }
             const section = document.getElementById('myDomainsSection');
             const status = document.getElementById('domainsStatus');
+            const domainsBody = document.getElementById('domainsBody');
+            domainsBody.innerHTML = '';
+            let foundDomains = false;
+
             try {
                 section.classList.add('loading');
                 status.innerText = "Fetching your domains...";
-                const domainsBody = document.getElementById('domainsBody');
-                domainsBody.innerHTML = '';
-                let foundDomains = false;
+
                 for (const domain in contracts) {
                     const contract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
                     const balance = await contract.methods.balanceOf(accounts[0]).call();
-                    if (balance > 0) {
-                        const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], 0).call();
+                    for (let i = 0; i < balance; i++) {
+                        const tokenId = await contract.methods.tokenOfOwnerByIndex(accounts[0], i).call();
                         const tokenName = await contract.methods.tokenName(tokenId).call();
                         const isBound = await resolverContract.methods.isDomainBound(tokenId).call();
                         const approved = await contract.methods.getApproved(tokenId).call();
                         const isApproved = approved.toLowerCase() === resolverAddress.toLowerCase();
+                        let boundAddress = 'Not bound';
+                        if (isBound) {
+                            try {
+                                boundAddress = await resolverContract.methods.getAddressByDomain(contracts[domain].address, tokenName).call();
+                                boundAddress = `${boundAddress.slice(0, 6)}...${boundAddress.slice(-4)}`;
+                            } catch (error) {
+                                boundAddress = 'Error resolving';
+                            }
+                        }
+
                         const row = document.createElement('tr');
+                        row.setAttribute('data-token-id', tokenId);
+                        row.setAttribute('data-contract', contracts[domain].address);
                         row.innerHTML = `
+                            <td>${contracts[domain].suffix.toUpperCase()}</td>
                             <td>${tokenId}</td>
                             <td>${tokenName}</td>
                             <td>${isBound ? 'Yes' : 'No'}</td>
+                            <td class="bound-address">${boundAddress}</td>
                             <td>
                                 ${!isApproved && !isBound ? `<button class="action-btn" onclick="approveNFT('${contracts[domain].address}', ${tokenId})">Approve</button>` : ''}
                                 ${isApproved && !isBound ? `<button class="action-btn" onclick="bindDomain('${contracts[domain].address}', ${tokenId})">Bind</button>` : ''}
                                 ${isBound ? `<button class="action-btn" onclick="unbindDomain(${tokenId})">Unbind</button>` : ''}
+                                <button class="action-btn" onclick="resolveDomain('${contracts[domain].address}', ${tokenId}, '${tokenName}')">Resolve</button>
                                 <button class="view-btn" onclick="viewNFT(${tokenId}, '${domain}')">View</button>
                             </td>
                         `;
@@ -757,7 +738,6 @@
             document.getElementById('connectButton').addEventListener('click', connectWallet);
             document.getElementById('mintDomain').addEventListener('click', mintDomain);
             document.getElementById('fetchMyDomains').addEventListener('click', fetchMyDomains);
-            document.getElementById('resolveDomain').addEventListener('click', resolveDomain);
             if (!window.location.protocol.startsWith('http')) {
                 document.getElementById('networkStatus').innerHTML = 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.';
             } else if (!window.ethereum) {
