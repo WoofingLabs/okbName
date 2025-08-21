@@ -698,21 +698,20 @@
                 section.classList.add('loading');
                 status.innerText = "Fetching resolved domains...";
 
-                // Fetch all bound domains for the user's address
-                const [domainNames, contractAddresses] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
-                if (domainNames && domainNames !== "None") {
-                    // Assuming getDomainByAddress returns an array or single value; adjust if it's a single string
-                    const domains = Array.isArray(domainNames) ? domainNames : [domainNames];
-                    const contracts = Array.isArray(contractAddresses) ? contractAddresses : [contractAddresses];
-
-                    for (let i = 0; i < domains.length; i++) {
-                        const domainName = domains[i];
-                        const contractAddress = contracts[i];
-                        const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
-                        if (!contract) continue;
-
+                const [domainName, contractAddress] = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
+                if (domainName && domainName !== "None") {
+                    const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
+                    if (contract) {
                         const contractInstance = new web3.eth.Contract(domainContractABI, contractAddress);
-                        const tokenId = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], 0).call(); // Adjust index if multiple tokens
+                        let tokenId = 0;
+                        const balance = await contractInstance.methods.balanceOf(accounts[0]).call();
+                        for (let i = 0; i < balance; i++) {
+                            const tid = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], i).call();
+                            if ((await contractInstance.methods.tokenName(tid).call()) === domainName) {
+                                tokenId = tid;
+                                break;
+                            }
+                        }
                         const boundAddress = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
 
                         const row = document.createElement('tr');
