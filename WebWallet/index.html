@@ -41,8 +41,6 @@
             <div id="balanceResult" class="balance"></div>
         </div>
         <div class="section">
-            <label for="toAddress">Send To Address:</label>
-            <input type="text" id="toAddress" placeholder="e.g., 0x..." disabled>
             <label for="amount">Amount:</label>
             <input type="number" id="amount" placeholder="0.0" step="0.0001" disabled>
             <div class="percent-buttons">
@@ -101,7 +99,6 @@
             document.getElementById('resolveButton').disabled = !enabled;
             document.getElementById('tokenContract').disabled = !enabled;
             document.getElementById('balanceButton').disabled = !enabled;
-            document.getElementById('toAddress').disabled = !enabled;
             document.getElementById('amount').disabled = !enabled;
             document.querySelectorAll('.percent-buttons button').forEach(btn => btn.disabled = !enabled);
             document.getElementById('sendButton').disabled = !enabled;
@@ -169,11 +166,10 @@
                 document.getElementById('transactionStatus').innerText = 'Please connect wallet first.';
                 return;
             }
-            const toAddress = document.getElementById('toAddress').value.trim();
             const amount = document.getElementById('amount').value;
             const tokenContractAddress = document.getElementById('tokenContract').value.trim();
-            if (!web3.utils.isAddress(toAddress) || !web3.utils.isAddress(tokenContractAddress)) {
-                document.getElementById('transactionStatus').innerText = 'Invalid address.';
+            if (!web3.utils.isAddress(tokenContractAddress)) {
+                document.getElementById('transactionStatus').innerText = 'Invalid token contract address.';
                 return;
             }
             if (!amount || amount <= 0) {
@@ -184,9 +180,13 @@
                 const tokenContract = new web3.eth.Contract([
                     {"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"type":"function"}
                 ], tokenContractAddress);
-                const address = document.getElementById('addressResult').innerText.split(': ')[1] || accounts[0];
-                const gas = await tokenContract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')).estimateGas({ from: address });
-                await tokenContract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')).send({ from: address, gas: Math.floor(gas * 1.2) });
+                const toAddress = document.getElementById('addressResult').innerText.split(': ')[1];
+                if (!toAddress) {
+                    document.getElementById('transactionStatus').innerText = 'Please resolve a domain address first.';
+                    return;
+                }
+                const gas = await tokenContract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')).estimateGas({ from: accounts[0] });
+                await tokenContract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')).send({ from: accounts[0], gas: Math.floor(gas * 1.2) });
                 document.getElementById('transactionStatus').innerText = 'Transaction successful!';
                 fetchBalance();
             } catch (error) {
