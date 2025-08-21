@@ -291,7 +291,7 @@
                 <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to X Layer (chain ID: 196). Ensure enough <span class="highlight">OKB</span> for .okb or <span class="highlight">ETH</span> for .star/.xdog gas fees.</li>
                 <li><strong>Mint Domain</strong>: Select .okb, .star, or .xdog, enter a domain ID (1-15 alphanumeric characters), and mint your NFT.</li>
                 <li><strong>Manual Registration</strong>: Copy hex data and contract address for manual registration via wallet with 0 ETH/OKB and hex as msg.data.</li>
-                <li><strong>Bind Domain</strong>: Approve your NFT for the DomainNameResolver contract (0x729523dcBAf9BB0Ad0b9393778Cb881ca6664CEE), then bind it to enable domain resolution.</li>
+                <li><strong>Bind Domain</strong>: Approve your NFT for the DomainNameResolver contract (0x51AEfC36203F0B3612e15c168aDE8ec2401A1507), then bind it to enable domain resolution.</li>
                 <li><strong>Unbind Domain</strong>: Unbind your NFT to retrieve it, clearing the resolution.</li>
                 <li><strong>Resolve Domain</strong>: Query a domain (e.g., jace123.okb) to find its bound address, or check your bound domain.</li>
                 <li><strong>Secure & Unique</strong>: One domain per address per contract, case-insensitive IDs, low-cost transactions on X Layer.</li>
@@ -305,7 +305,7 @@
     <script>
         let web3, accounts, domainContract, resolverContract;
         let selectedDomain = 'okb';
-        const resolverAddress = '0x729523dcBAf9BB0Ad0b9393778Cb881ca6664CEE';
+        const resolverAddress = '0x51AEfC36203F0B3612e15c168aDE8ec2401A1507';
 
         const contracts = {
             okb: {
@@ -636,10 +636,31 @@
             const status = document.getElementById('resolveStatus');
             const contractAddress = document.getElementById('resolveContract').value;
             const domainName = document.getElementById('resolveDomainInput').value.trim();
+            const selectedContract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
+            
             if (!domainName) {
                 status.innerText = "Please enter a domain name";
                 return;
             }
+            
+            // Validate domain suffix
+            const normalizedDomain = domainName.toLowerCase();
+            const expectedSuffix = selectedContract.suffix;
+            if (!normalizedDomain.endsWith('.' + expectedSuffix) && !normalizedDomain.endsWith(expectedSuffix)) {
+                status.innerText = `Invalid domain suffix. Expected .${expectedSuffix} for selected contract`;
+                return;
+            }
+            
+            // Remove suffix for validation
+            const domainWithoutSuffix = normalizedDomain.endsWith('.' + expectedSuffix)
+                ? normalizedDomain.slice(0, -(expectedSuffix.length + 1))
+                : normalizedDomain.slice(0, -expectedSuffix.length);
+            
+            if (!isValidString(domainWithoutSuffix)) {
+                status.innerText = "Invalid domain ID. Use 1-15 alphanumeric characters.";
+                return;
+            }
+
             try {
                 section.classList.add('loading');
                 status.innerText = "Resolving domain...";
@@ -648,7 +669,10 @@
                 status.innerText = `Domain ${domainName} resolved to ${address.slice(0, 6)}...${address.slice(-4)}`;
             } catch (error) {
                 console.error(error);
-                status.innerText = "Failed to resolve domain: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+                const errorMessage = error.message.includes('revert') 
+                    ? error.message.split('revert')[1]?.trim() || 'Unknown reason'
+                    : error.message;
+                status.innerText = `Failed to resolve domain: ${errorMessage}`;
             } finally {
                 section.classList.remove('loading');
             }
