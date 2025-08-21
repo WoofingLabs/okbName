@@ -597,7 +597,7 @@ async function unbindDomain(tokenId) {
         section.classList.add('loading');
         status.innerText = `Unbinding NFT ${tokenId}...`;
 
-        // Execute unbinding without additional checks
+        // Execute unbinding with the exact tokenId
         const resolver = new web3.eth.Contract(resolverContractABI, resolverAddress);
         const gas = await resolver.methods.unbindDomain(tokenId).estimateGas({ from: accounts[0] }).catch(() => 200000);
         await resolver.methods.unbindDomain(tokenId).send({
@@ -680,22 +680,25 @@ async function fetchResolvedDomains() {
         section.classList.add('loading');
         status.innerText = "Fetching resolved domains...";
 
-        // Use call to get the raw result and handle the tuple correctly
+        // Use call to get the raw result
         const result = await resolverContract.methods.getDomainByAddress(accounts[0]).call();
-        const domainName = result[0]; // First element is the string (domain name)
-        const contractAddress = result[1]; // Second element is the address
+        const domainName = result[0]; // Domain name
+        const contractAddress = result[1]; // Contract address
 
         if (domainName && domainName !== "None") {
             const contract = Object.values(contracts).find(c => c.address.toLowerCase() === contractAddress.toLowerCase());
             if (contract) {
                 const contractInstance = new web3.eth.Contract(domainContractABI, contractAddress);
-                let tokenId = 0;
-                const balance = await contractInstance.methods.balanceOf(accounts[0]).call();
-                for (let i = 0; i < balance; i++) {
-                    const tid = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], i).call();
-                    if ((await contractInstance.methods.tokenName(tid).call()) === domainName) {
-                        tokenId = tid;
-                        break;
+                let tokenId = await resolverContract.methods.addressToTokenId(accounts[0]).call(); // Get the bound tokenId directly
+                if (tokenId == 0) {
+                    // Fallback to find tokenId by matching domainName if addressToTokenId fails
+                    const balance = await contractInstance.methods.balanceOf(accounts[0]).call();
+                    for (let i = 0; i < balance; i++) {
+                        const tid = await contractInstance.methods.tokenOfOwnerByIndex(accounts[0], i).call();
+                        if ((await contractInstance.methods.tokenName(tid).call()) === domainName) {
+                            tokenId = tid;
+                            break;
+                        }
                     }
                 }
                 const boundAddress = await resolverContract.methods.getAddressByDomain(contractAddress, domainName).call();
