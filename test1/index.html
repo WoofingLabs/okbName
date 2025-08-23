@@ -134,7 +134,7 @@
             <p>在X Layer上使用我们的发射台铸造和管理独特的域名NFT！</p>
             <ul>
                 <li><strong>连接钱包</strong>：输入以0x开头的私钥连接到X Layer（链ID：196）。确保有足够的<span class="highlight">OKB</span>（用于.okb）或<span class="highlight">ETH</span>（用于.star/.xdog）支付gas费用。</li>
-                <li><strong>自动铸造</strong>：选择.okb、.star或.xdog，选择1-4位数字的域名长度和类型（纯字母、纯数字或混合），输入目标转账地址，点击“开始自动铸造”，系统将自动生成、检查并铸造未被注册的域名，并转账到指定地址。</li>
+                <li><strong>自动铸造</strong>：选择.okb、.star或.xdog，选择1-4位数字的域名长度和类型（纯字母、纯数字或混合），输入目标转账地址，点击“开始自动铸造”，系统将随机生成域名、检查可用性、铸造并转账到指定地址。</li>
                 <li><strong>手动注册</strong>：复制合约地址进行手动注册，通过钱包发送0 ETH/OKB并附带hex数据作为msg.data。</li>
                 <li><strong>绑定域名</strong>：在“我的域名”中，批准NFT给DomainNameResolver合约（0x51AEfC36203F0B3612e15c168aDE8ec2401A1507），然后绑定以启用域名解析。</li>
                 <li><strong>解绑域名</strong>：在“我的已解析域名”中，解绑NFT以收回，清除解析记录。</li>
@@ -267,7 +267,7 @@
             document.getElementById('mintStatus').textContent = '';
         }
 
-        function generateCombinations(length, type) {
+        function generateRandomDomain(length, type) {
             const letters = 'abcdefghijklmnopqrstuvwxyz';
             const numbers = '0123456789';
             let chars = '';
@@ -275,18 +275,11 @@
             else if (type === 'numbers') chars = numbers;
             else chars = letters + numbers;
 
-            const combinations = [];
-            function generate(current, len) {
-                if (current.length === len) {
-                    combinations.push(current);
-                    return;
-                }
-                for (let i = 0; i < chars.length; i++) {
-                    generate(current + chars[i], len);
-                }
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            generate('', length);
-            return combinations;
+            return result;
         }
 
         async function checkDomainAvailability(domainId) {
@@ -353,9 +346,12 @@
             document.getElementById('stopAutoMint').disabled = false;
             status.innerText = "开始自动铸造...";
 
-            const combinations = generateCombinations(selectedDigit, selectedType);
-            for (let i = 0; i < combinations.length && isAutoMinting; i++) {
-                const domainId = combinations[i];
+            const maxAttempts = 1000; // 最大尝试次数，防止无限循环
+            let attempts = 0;
+
+            while (isAutoMinting && attempts < maxAttempts) {
+                const domainId = generateRandomDomain(selectedDigit, selectedType);
+                status.innerText = `正在检查域名 ${domainId}.${contracts[selectedDomain].suffix}...`;
                 const isAvailable = await checkDomainAvailability(domainId);
                 if (isAvailable) {
                     const tokenId = await mintDomain(domainId);
@@ -363,12 +359,14 @@
                         await transferNFT(tokenId, transferAddress);
                     }
                 } else {
-                    status.innerText = `域名 ${domainId}.${contracts[selectedDomain].suffix} 已被铸造，跳过...`;
+                    status.innerText = `域名 ${domainId}.${contracts[selectedDomain].suffix} 已被铸造，尝试下一个...`;
                 }
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 避免过于频繁的请求
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 1秒延迟，避免频繁请求
             }
-            if (isAutoMinting) {
-                status.innerText = "所有可能的域名组合已检查完成！";
+
+            if (attempts >= maxAttempts) {
+                status.innerText = "达到最大尝试次数，自动铸造停止";
                 stopAutoMint();
             }
         }
@@ -380,18 +378,12 @@
             document.getElementById('mintStatus').innerText = "自动铸造已停止";
         }
 
-        function copyToClipboard(type) {
+        function copyToClipboard() {
             const status = document.getElementById('mintStatus');
-            const sourceElement = document.getElementById('contractAddress');
-            const textToCopy = sourceElement.textContent;
-
-            if (!textToCopy) {
-                status.innerText = "无有效的合约地址可复制";
-                return;
-            }
+            const contractAddress = document.getElementById('contractAddress').textContent;
 
             const textArea = document.createElement('textarea');
-            textArea.value = textToCopy;
+            textArea.value = contractAddress;
             textArea.style.position = 'fixed';
             textArea.style.opacity = '0';
             document.body.appendChild(textArea);
@@ -401,7 +393,7 @@
                 status.innerText = "合约地址已复制到剪贴板";
             } catch (error) {
                 console.error("复制失败:", error);
-                status.innerText = "复制合约地址失败，请手动选择并复制";
+                status.innerText = "复制合约地址失败，请手动复制";
             } finally {
                 document.body.removeChild(textArea);
             }
@@ -580,7 +572,7 @@
             document.getElementById('stopAutoMint').addEventListener('click', stopAutoMint);
             document.getElementById('fetchMyDomains').addEventListener('click', fetchMyDomains);
             document.getElementById('fetchResolvedDomains').addEventListener('click', fetchResolvedDomains);
-            document.getElementById('copyAddressButton').addEventListener('click', () => copyToClipboard('address'));
+            document.getElementById('copyAddressButton').addEventListener('click', copyToClipboard);
         });
     </script>
 </body>
