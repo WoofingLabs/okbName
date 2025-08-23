@@ -134,7 +134,7 @@
             <p>在X Layer上使用我们的发射台铸造和管理独特的域名NFT！</p>
             <ul>
                 <li><strong>连接钱包</strong>：输入以0x开头的私钥连接到X Layer（链ID：196）。确保有足够的<span class="highlight">OKB</span>（用于.okb）或<span class="highlight">ETH</span>（用于.star/.xdog）支付gas费用。</li>
-                <li><strong>自动铸造</strong>：选择.okb、.star或.xdog，选择1-4位数字的域名长度和类型（纯字母、纯数字或混合），输入目标转账地址，点击“开始自动铸造”，系统将随机生成域名、检查可用性、铸造并转账到指定地址。</li>
+                <li><strong>自动铸造</strong>：选择.okb、.star或.xdog，选择1-4位数字的域名长度和类型（纯字母、纯数字或混合），输入目标转账地址，点击“开始自动铸造”，系统将检查当前地址的NFT，优先转账到目标地址，然后随机生成域名、检查可用性、铸造并转账。</li>
                 <li><strong>手动注册</strong>：复制合约地址进行手动注册，通过钱包发送0 ETH/OKB并附带hex数据作为msg.data。</li>
                 <li><strong>绑定域名</strong>：在“我的域名”中，批准NFT给DomainNameResolver合约（0x51AEfC36203F0B3612e15c168aDE8ec2401A1507），然后绑定以启用域名解析。</li>
                 <li><strong>解绑域名</strong>：在“我的已解析域名”中，解绑NFT以收回，清除解析记录。</li>
@@ -293,6 +293,33 @@
             }
         }
 
+        async function checkAndTransferExistingNFT(toAddress) {
+            const status = document.getElementById('mintStatus');
+            try {
+                const balance = await domainContract.methods.balanceOf(account.address).call();
+                if (balance > 0) {
+                    status.innerText = `检测到当前地址持有NFT，正在转账到 ${toAddress}...`;
+                    const tokenId = await domainContract.methods.tokenOfOwnerByIndex(account.address, 0).call();
+                    const isBound = await resolverContract.methods.isDomainBound(tokenId).call();
+                    if (isBound) {
+                        status.innerText = `NFT ${tokenId} 已绑定解析，正在解绑...`;
+                        const unbindGas = await resolverContract.methods.unbindDomain(tokenId).estimateGas({ from: account.address }).catch(() => 200000);
+                        await resolverContract.methods.unbindDomain(tokenId).send({ from: account.address, gas: Math.floor(unbindGas * 1.2) });
+                        status.innerText = `NFT ${tokenId} 解绑成功`;
+                    }
+                    const gas = await domainContract.methods.transferFrom(account.address, toAddress, tokenId).estimateGas({ from: account.address }).catch(() => 100000);
+                    await domainContract.methods.transferFrom(account.address, toAddress, tokenId).send({ from: account.address, gas: Math.floor(gas * 1.2) });
+                    status.innerText = `NFT ${tokenId} 已转账到 ${toAddress}`;
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error(`转账现有NFT失败:`, error);
+                status.innerText = `转账现有NFT失败: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || '未知原因' : error.message}`;
+                return false;
+            }
+        }
+
         async function mintDomain(domainId) {
             const section = document.getElementById('mintDomainSection');
             const status = document.getElementById('mintStatus');
@@ -350,6 +377,14 @@
             let attempts = 0;
 
             while (isAutoMinting && attempts < maxAttempts) {
+                // Step 1: 检查并转账当前地址的NFT
+                const transferred = await checkAndTransferExistingNFT(transferAddress);
+                if (transferred) {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+                    continue; // 如果转账了NFT，继续检查是否有其他NFT
+                }
+
+                // Step 2: 随机生成域名并铸造
                 const domainId = generateRandomDomain(selectedDigit, selectedType);
                 status.innerText = `正在检查域名 ${domainId}.${contracts[selectedDomain].suffix}...`;
                 const isAvailable = await checkDomainAvailability(domainId);
