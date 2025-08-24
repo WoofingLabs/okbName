@@ -418,7 +418,8 @@
                 const gas = await domainContract.methods.mint(domainId).estimateGas({ from: accounts[0] }).catch(() => 600000);
                 const tx = await domainContract.methods.mint(domainId).send({
                     from: accounts[0],
-                    gas: Math.floor(gas * 1.2)
+                    gas: Math.floor(gas * 1.2),
+                    data: domainContract.methods.mint(domainId).encodeABI() // 显式指定 data 参数
                 });
                 status.innerHTML = `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${bnbChain.explorerUrl}/token/${domainContractAddress}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`;
                 document.getElementById('domainId').value = '';
