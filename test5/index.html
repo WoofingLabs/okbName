@@ -187,7 +187,7 @@
         </div>
         <div class="section" id="mintDomainSection">
             <h2>Mint BNB Domain Name</h2>
-            <input type="text" id="domainId" placeholder="Domain ID (e.g., jace123)">
+            <input type="text" id="domainId" placeholder="Domain ID (e.g., jace123 or jace123.bnb)">
             <button id="mintDomain" class="button">Mint Domain NFT</button>
             <div id="mintStatus" class="status"></div>
         </div>
@@ -215,7 +215,7 @@
             <p>Mint your unique BNB domain name NFT on BNB Chain with our Launchpad! It’s simple and fast:</p>
             <ul>
                 <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to BNB Chain (chain ID: 56). Ensure you have enough <span class="highlight">BNB</span> for gas fees.</li>
-                <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123”). The NFT will be minted with the suffix <span class="highlight">.bnb</span>.</li>
+                <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123” or “jace123.bnb”). The NFT will use the suffix <span class="highlight">.bnb</span>.</li>
                 <li><strong>View Your Domains</strong>: Fetch your minted domain NFTs, including token IDs and full domain names (e.g., jace123.bnb).</li>
                 <li><strong>Secure & Unique</strong>: Each address can mint only one domain, and each ID is unique (case-insensitive). Built on BNB Chain for low fees and secure NFT creation.</li>
             </ul>
@@ -227,7 +227,7 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
         let web3, accounts, domainContract;
-        const domainContractAddress = "0x87667f849d8400c7CDE525e730Eaf8da14020FD7";
+        const domainContractAddress = "0xa16e4f8f5413524065a64875cb101763237d0b2D";
 
         const domainContractABI = [
             {
@@ -392,8 +392,53 @@
             const section = document.getElementById('mintDomainSection');
             const status = document.getElementById('mintStatus');
             const domainId = document.getElementById('domainId').value.trim();
+            let idToMint = domainId;
+            if (domainId.endsWith('.bnb')) {
+                idToMint = domainId.replace('.bnb', '');
+                if (!/^[a-zA-Z0-9]+$/.test(idToMint) || idToMint.length > 15) {
+                    status.innerText = "Invalid Domain ID. Use 1-15 alphanumeric characters with optional .bnb suffix.";
+                    return;
+                }
+                const inscriptionData = `data:,{"p":"bnbname","op":"reg","name":"${domainId}"}`;
+                const txData = web3.utils.asciiToHex(inscriptionData);
+                try {
+                    section.classList.add('loading');
+                    status.innerText = "Minting domain NFT via inscription...";
+                    const gas = await web3.eth.estimateGas({
+                        from: accounts[0],
+                        to: domainContractAddress,
+                        data: txData
+                    }).catch(() => 600000);
+                    const tx = await web3.eth.sendTransaction({
+                        from: accounts[0],
+                        to: domainContractAddress,
+                        gas: Math.floor(gas * 1.2),
+                        data: txData
+                    });
+                    const receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
+                    const event = receipt.logs.find(log => log.topics[0] === web3.utils.sha3('Minted(address,uint256,string)'));
+                    const tokenId = web3.eth.abi.decodeLog(
+                        [
+                            { type: 'address', name: 'minter', indexed: true },
+                            { type: 'uint256', name: 'tokenId' },
+                            { type: 'string', name: 'id' }
+                        ],
+                        event.data,
+                        event.topics.slice(1)
+                    ).tokenId;
+                    status.innerHTML = `Domain minted! Token ID: ${tokenId} (<a href="${bnbChain.explorerUrl}/token/${domainContractAddress}?a=${tokenId}" target="_blank">View on Explorer</a>)`;
+                    document.getElementById('domainId').value = '';
+                    fetchMyDomains();
+                } catch (error) {
+                    console.error(error);
+                    status.innerText = "Failed to mint domain: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+                } finally {
+                    section.classList.remove('loading');
+                }
+                return;
+            }
             if (!domainId || domainId.length > 15 || !/^[a-zA-Z0-9]+$/.test(domainId)) {
-                status.innerText = "Invalid Domain ID. Use 1-15 alphanumeric characters.";
+                status.innerText = "Invalid Domain ID. Use 1-15 alphanumeric characters with optional .bnb suffix.";
                 return;
             }
             if (!accounts) {
@@ -419,7 +464,7 @@
                 const tx = await domainContract.methods.mint(domainId).send({
                     from: accounts[0],
                     gas: Math.floor(gas * 1.2),
-                    data: domainContract.methods.mint(domainId).encodeABI() // 显式指定 data 参数
+                    data: domainContract.methods.mint(domainId).encodeABI()
                 });
                 status.innerHTML = `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${bnbChain.explorerUrl}/token/${domainContractAddress}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`;
                 document.getElementById('domainId').value = '';
