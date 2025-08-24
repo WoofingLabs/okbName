@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNB Domain Name Launchpad - BNB Chain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #121212; 
+            color: #E6E6E6; 
+            padding: 20px; 
+            min-height: 100vh; 
+            line-height: 1.5; 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 30px; 
+            background: #1A1A1A; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #cccccc; 
+            font-size: clamp(1.8em, 5vw, 2.5em); 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+        .section { 
+            background: #222222; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+        }
+        h2 { 
+            color: #cccccc; 
+            font-size: clamp(1.2em, 3.5vw, 1.6em); 
+            margin-bottom: 15px; 
+            font-weight: 600; 
+        }
+        .button { 
+            background: #333333; 
+            color: #ffffff; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease; 
+            margin: 5px; 
+        }
+        .button:hover { 
+            background: #555555; 
+            transform: translateY(-2px); 
+        }
+        .button:disabled { 
+            background: #444444; 
+            color: #777777; 
+            cursor: not-allowed; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            background: #2A2A2A; 
+            color: #E6E6E6; 
+            font-size: 1em; 
+        }
+        input::placeholder { 
+            color: #666666; 
+        }
+        .status { 
+            margin-top: 10px; 
+            font-size: 0.9em; 
+            color: #cccccc; 
+        }
+        .wallet-info { 
+            color: #cccccc; 
+            font-weight: 600; 
+            word-break: break-all; 
+        }
+        .nft-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+        .nft-table th, .nft-table td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #333333; 
+        }
+        .nft-table th { 
+            background: #2A2A2A; 
+            color: #cccccc; 
+            font-weight: 600; 
+        }
+        .copy-btn, .view-btn { 
+            background: #333333; 
+            color: #cccccc; 
+            padding: 6px 12px; 
+            font-size: 0.85em; 
+            border-radius: 4px; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .copy-btn:hover, .view-btn:hover { 
+            background: #555555; 
+        }
+        .loading { 
+            opacity: 0.7; 
+            pointer-events: none; 
+        }
+        .nft-preview { 
+            margin-top: 15px; 
+            text-align: center; 
+        }
+        .nft-preview img { 
+            max-width: 100%; 
+            border: 1px solid #cccccc; 
+            border-radius: 8px; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            font-size: 0.85em; 
+            color: #666666; 
+        }
+        .footer a { 
+            color: #cccccc; 
+            text-decoration: none; 
+        }
+        .footer a:hover { 
+            text-decoration: underline; 
+        }
+        .how-it-works { 
+            background: #222222; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #cccccc; 
+            margin-top: 20px; 
+        }
+        .how-it-works ul { 
+            list-style-type: disc; 
+            padding-left: 20px; 
+            margin-top: 10px; 
+        }
+        .how-it-works li { 
+            margin-bottom: 12px; 
+            font-size: 0.9em; 
+        }
+        .how-it-works .highlight { 
+            color: #cccccc; 
+            font-weight: 600; 
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
+            .button { width: 100%; padding: 12px; margin: 8px 0; }
+            .nft-table { display: block; overflow-x: auto; }
+            .nft-table th, .nft-table td { font-size: 0.85em; padding: 10px; }
+            .nft-table tr { display: block; margin-bottom: 10px; border-bottom: 1px solid #333333; }
+            .nft-table td { display: block; text-align: left; }
+            .nft-table td button { width: 100%; margin: 5px 0; }
+            .how-it-works ul { padding-left: 15px; }
+            .how-it-works li { font-size: 0.85em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BNB Domain Name Launchpad</h1>
+        <div class="section">
+            <h2>Connect to BNB Chain</h2>
+            <button id="connectButton" class="button">Connect Wallet</button>
+            <p>Wallet: <span id="walletAddress" class="wallet-info">Not connected</span></p>
+            <div id="networkStatus" class="status">Click to connect...</div>
+        </div>
+        <div class="section" id="mintDomainSection">
+            <h2>Mint BNB Domain Name</h2>
+            <input type="text" id="domainId" placeholder="Domain ID (e.g., jace123)">
+            <button id="mintDomain" class="button">Mint Domain NFT</button>
+            <div id="mintStatus" class="status"></div>
+        </div>
+        <div class="section" id="myDomainsSection">
+            <h2>My BNB Domains</h2>
+            <button id="fetchMyDomains" class="button">Fetch My Domains</button>
+            <table class="nft-table">
+                <thead>
+                    <tr>
+                        <th>Token ID</th>
+                        <th>Domain Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="domainsBody"></tbody>
+            </table>
+            <div id="domainsStatus" class="status"></div>
+            <div class="nft-preview" id="nftPreview" style="display: none;">
+                <h2>NFT Preview</h2>
+                <img id="nftImage" src="" alt="NFT Preview">
+            </div>
+        </div>
+        <div class="how-it-works">
+            <h2>How It Works?</h2>
+            <p>Mint your unique BNB domain name NFT on BNB Chain with our Launchpad! It’s simple and fast:</p>
+            <ul>
+                <li><strong>Connect Your Wallet</strong>: Use MetaMask to connect to BNB Chain (chain ID: 56). Ensure you have enough <span class="highlight">BNB</span> for gas fees.</li>
+                <li><strong>Mint Your Domain</strong>: Enter a domain ID (1-15 alphanumeric characters, e.g., “jace123”). The NFT will be minted with the suffix <span class="highlight">.bnb</span>.</li>
+                <li><strong>View Your Domains</strong>: Fetch your minted domain NFTs, including token IDs and full domain names (e.g., jace123.bnb).</li>
+                <li><strong>Secure & Unique</strong>: Each address can mint only one domain, and each ID is unique (case-insensitive). Built on BNB Chain for low fees and secure NFT creation.</li>
+            </ul>
+        </div>
+        <div class="footer">
+            Powered by <a href="https://bscscan.com" target="_blank">BNB Chain</a> | BNB Domain Name Launchpad © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, accounts, domainContract;
+        const domainContractAddress = "0x87667f849d8400c7CDE525e730Eaf8da14020FD7";
+
+        const domainContractABI = [
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "_id", "type": "string" }
+                ],
+                "name": "mint",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    { "indexed": true, "internalType": "address", "name": "minter", "type": "address" },
+                    { "indexed": false, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+                    { "indexed": false, "internalType": "string", "name": "id", "type": "string" }
+                ],
+                "name": "Minted",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+                ],
+                "name": "tokenName",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+                ],
+                "name": "tokenURI",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "owner", "type": "address" },
+                    { "internalType": "uint256", "name": "index", "type": "uint256" }
+                ],
+                "name": "tokenOfOwnerByIndex",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SUFFIX",
+                "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "name": "idsMintedLower",
+                "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "owner", "type": "address" }
+                ],
+                "name": "balanceOf",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "", "type": "address" }
+                ],
+                "name": "ownerToTokenId",
+                "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const bnbChain = {
+            chainId: 56,
+            name: 'BNB Chain Mainnet',
+            explorerUrl: 'https://bscscan.com',
+            rpcUrl: 'https://bsc-dataseed.binance.org'
+        };
+
+        async function connectWallet() {
+            const status = document.getElementById('networkStatus');
+            try {
+                if (!window.ethereum) {
+                    status.innerHTML = 'No wallet detected. Please install <a href="https://metamask.io" target="_blank">MetaMask</a>.';
+                    throw new Error("No wallet detected");
+                }
+                status.innerText = "Connecting...";
+                web3 = new Web3(window.ethereum);
+                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) {
+                    throw new Error("Please unlock your wallet or connect it.");
+                }
+                const chainId = await web3.eth.getChainId();
+                if (chainId !== 56) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x38' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x38',
+                                    chainName: 'BNB Chain Mainnet',
+                                    nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org'],
+                                    blockExplorerUrls: ['https://bscscan.com']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+                document.getElementById('walletAddress').innerText = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+                domainContract = new web3.eth.Contract(domainContractABI, domainContractAddress);
+                status.innerText = "Connected to BNB Chain";
+                fetchMyDomains();
+            } catch (error) {
+                console.error(error);
+                status.innerText = "Failed to connect: " + error.message;
+            }
+        }
+
+        async function mintDomain() {
+            const section = document.getElementById('mintDomainSection');
+            const status = document.getElementById('mintStatus');
+            const domainId = document.getElementById('domainId').value.trim();
+            if (!domainId || domainId.length > 15 || !/^[a-zA-Z0-9]+$/.test(domainId)) {
+                status.innerText = "Invalid Domain ID. Use 1-15 alphanumeric characters.";
+                return;
+            }
+            if (!accounts) {
+                status.innerText = "Please connect your wallet first!";
+                return;
+            }
+            try {
+                section.classList.add('loading');
+                status.innerText = "Checking domain availability...";
+                const domainIdLower = domainId.toLowerCase();
+                const isMinted = await domainContract.methods.idsMintedLower(domainIdLower).call();
+                if (isMinted) {
+                    status.innerText = "Domain ID already minted!";
+                    return;
+                }
+                const hasMinted = await domainContract.methods.ownerToTokenId(accounts[0]).call();
+                if (hasMinted != 0) {
+                    status.innerText = "This address has already minted a domain!";
+                    return;
+                }
+                status.innerText = "Minting domain NFT...";
+                const gas = await domainContract.methods.mint(domainId).estimateGas({ from: accounts[0] }).catch(() => 600000);
+                const tx = await domainContract.methods.mint(domainId).send({
+                    from: accounts[0],
+                    gas: Math.floor(gas * 1.2)
+                });
+                status.innerHTML = `Domain minted! Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${bnbChain.explorerUrl}/token/${domainContractAddress}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">View on Explorer</a>)`;
+                document.getElementById('domainId').value = '';
+                fetchMyDomains();
+            } catch (error) {
+                console.error(error);
+                status.innerText = "Failed to mint domain: " + (error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || 'Unknown reason' : error.message);
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function fetchMyDomains() {
+            if (!accounts) {
+                document.getElementById('domainsStatus').innerText = "Please connect your wallet first!";
+                return;
+            }
+            const section = document.getElementById('myDomainsSection');
+            const status = document.getElementById('domainsStatus');
+            try {
+                section.classList.add('loading');
+                status.innerText = "Fetching your domains...";
+                const domainsBody = document.getElementById('domainsBody');
+                domainsBody.innerHTML = '';
+                const balance = await domainContract.methods.balanceOf(accounts[0]).call();
+                if (balance == 0) {
+                    status.innerText = "No domains minted yet!";
+                    return;
+                }
+                const tokenId = await domainContract.methods.tokenOfOwnerByIndex(accounts[0], 0).call();
+                const tokenName = await domainContract.methods.tokenName(tokenId).call();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tokenId}</td>
+                    <td>${tokenName}</td>
+                    <td>
+                        <button class="view-btn" onclick="viewNFT(${tokenId})">View</button>
+                    </td>
+                `;
+                domainsBody.appendChild(row);
+                status.innerText = "Domains loaded successfully!";
+            } catch (error) {
+                console.error(error);
+                status.innerText = "Failed to fetch domains: " + error.message;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function viewNFT(tokenId) {
+            try {
+                const tokenURI = await domainContract.methods.tokenURI(tokenId).call();
+                const json = JSON.parse(atob(tokenURI.split(',')[1]));
+                document.getElementById('nftImage').src = json.image;
+                document.getElementById('nftPreview').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                document.getElementById('domainsStatus').innerText = "Failed to load NFT preview: " + error.message;
+            }
+        }
+
+        document.getElementById('connectButton').addEventListener('click', connectWallet);
+        document.getElementById('mintDomain').addEventListener('click', mintDomain);
+        document.getElementById('fetchMyDomains').addEventListener('click', fetchMyDomains);
+
+        window.addEventListener('load', () => {
+            if (!window.location.protocol.startsWith('http')) {
+                document.getElementById('networkStatus').innerHTML = 'Please run this page via a local server (e.g., "npx serve") to connect MetaMask.';
+            } else if (!window.ethereum) {
+                document.getElementById('networkStatus').innerHTML = 'No wallet detected. Please install <a href="https://metamask.io">MetaMask</a>.';
+            }
+        });
+    </script>
+</body>
+</html>
