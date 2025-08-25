@@ -58,14 +58,17 @@
             font-size: 14px;
             word-break: break-all;
         }
+        .loading {
+            color: #888888;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>X Layer 铭文域名查询</h1>
         <div class="section">
-            <label for="domainInput">输入域名 (例如: jace.okb):</label>
-            <input type="text" id="domainInput" placeholder="例如: jace.okb">
+            <label for="domainInput">输入域名（例如：jace.okb）：</label>
+            <input type="text" id="domainInput" placeholder="例如：jace.okb">
             <div class="section">
                 <button id="copyButton" onclick="copyAddress()" disabled>复制地址</button>
             </div>
@@ -76,7 +79,8 @@
     <script>
         let web3;
 
-        const contractAddress = '0xBf13Ed020DCF22bc8216a23A1167A5dD1fDC2D0e';
+        // 规范化合约地址
+        const contractAddress = '0xbf13ed020dcf22bc8216a23a1167a5dd1fdc2d0e';
         const contractABI = [
             {
                 "inputs": [
@@ -98,16 +102,16 @@
                 "type": "function"
             },
             {
-                "inputs": [
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
                     {
-                        "internalType": "string",
-                        "name": "_id",
-                        "type": "string"
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
                     }
                 ],
-                "name": "mint",
-                "outputs": [],
-                "stateMutability": "nonpayable",
+                "stateMutability": "view",
                 "type": "function"
             },
             {
@@ -132,59 +136,79 @@
         ];
         const xLayer = { chainId: 196, rpcUrl: 'https://rpc.xlayer.tech' };
 
-        // 初始化 Web3，使用 X Layer 的 RPC
+        // 初始化 Web3
         async function initWeb3() {
             try {
                 web3 = new Web3(xLayer.rpcUrl);
-                document.getElementById('addressResult').innerText = 'Web3 初始化成功';
+                document.getElementById('addressResult').innerText = '已连接到 X Layer 网络';
             } catch (error) {
-                document.getElementById('addressResult').innerText = 'Web3 初始化失败: ' + error.message;
+                document.getElementById('addressResult').innerText = '网络连接失败：' + error.message;
             }
         }
 
         // 查询域名对应的拥有者地址
         async function resolveAddress() {
-            const domain = document.getElementById('domainInput').value.trim();
-            if (!domain) {
-                document.getElementById('addressResult').innerText = '请输入域名';
-                document.getElementById('copyButton').disabled = true;
+            const domainInput = document.getElementById('domainInput').value.trim();
+            const addressResult = document.getElementById('addressResult');
+            const copyButton = document.getElementById('copyButton');
+
+            // 验证输入
+            if (!domainInput) {
+                addressResult.innerText = '请输入域名';
+                copyButton.disabled = true;
                 return;
             }
-            if (!domain.endsWith('.okb')) {
-                document.getElementById('addressResult').innerText = '仅支持 .okb 后缀的域名';
-                document.getElementById('copyButton').disabled = true;
+            if (!domainInput.endsWith('.okb')) {
+                addressResult.innerText = '仅支持 .okb 后缀的域名';
+                copyButton.disabled = true;
                 return;
             }
+
+            // 显示加载状态
+            addressResult.innerText = '查询中...';
+            addressResult.classList.add('loading');
+            copyButton.disabled = true;
+
             try {
-                const contract = new web3.eth.Contract(contractABI, contractAddress);
-                const domainName = domain.slice(0, -4); // 去掉 .okb 后缀
+                // 规范化合约地址
+                const checksumAddress = web3.utils.toChecksumAddress(contractAddress);
+                const contract = new web3.eth.Contract(contractABI, checksumAddress);
+
+                // 获取 totalSupply 以确定遍历范围
+                const totalSupply = await contract.methods.totalSupply().call();
+                const domainName = domainInput.slice(0, -4); // 去掉 .okb 后缀
                 let tokenId = null;
 
                 // 遍历 tokenId 获取匹配的域名
-                for (let i = 1; i <= 1000; i++) { // 假设最大 tokenId 为 1000，可根据实际需求调整
+                for (let i = 1; i <= totalSupply; i++) {
                     try {
                         const name = await contract.methods.tokenName(i).call();
-                        if (name.toLowerCase() === domain.toLowerCase()) {
+                        if (name.toLowerCase() === domainInput.toLowerCase()) {
                             tokenId = i;
                             break;
                         }
                     } catch (e) {
-                        break; // 如果 tokenId 不存在，退出循环
+                        console.error(`Token ID ${i} 查询失败:`, e);
+                        continue; // 跳过无效 tokenId
                     }
                 }
 
                 if (!tokenId) {
-                    document.getElementById('addressResult').innerText = '域名未找到或未注册';
-                    document.getElementById('copyButton').disabled = true;
+                    addressResult.innerText = '域名未注册或不存在';
+                    copyButton.disabled = true;
+                    addressResult.classList.remove('loading');
                     return;
                 }
 
+                // 查询拥有者地址
                 const owner = await contract.methods.ownerOf(tokenId).call();
-                document.getElementById('addressResult').innerText = `域名拥有者地址: ${owner}`;
-                document.getElementById('copyButton').disabled = false;
+                addressResult.innerText = `域名拥有者地址: ${owner}`;
+                copyButton.disabled = false;
             } catch (error) {
-                document.getElementById('addressResult').innerText = '查询失败: ' + error.message;
-                document.getElementById('copyButton').disabled = true;
+                addressResult.innerText = `查询失败: ${error.message}`;
+                copyButton.disabled = true;
+            } finally {
+                addressResult.classList.remove('loading');
             }
         }
 
