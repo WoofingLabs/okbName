@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>域名注册器 - X Layer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://woofingjace.com/images/jace.png" type="image/x-icon">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: #121212; color: #E6E6E6; padding: 20px; min-height: 100vh; line-height: 1.5; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 30px; background: #1A1A1A; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
+        h1 { text-align: center; color: #cccccc; font-size: clamp(1.8em, 5vw, 2.5em); margin-bottom: 25px; font-weight: 700; text-transform: uppercase; }
+        .section { background: #222222; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #cccccc; }
+        h2 { color: #cccccc; font-size: clamp(1.2em, 3.5vw, 1.6em); margin-bottom: 15px; font-weight: 600; }
+        .toggle-buttons { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .toggle-button { background: #333333; color: #ffffff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; font-size: 1em; cursor: pointer; transition: background 0.3s ease, transform 0.2s ease; margin: 5px; }
+        .toggle-button.active { background: #555555; transform: translateY(-2px); }
+        .toggle-button:hover { background: #555555; transform: translateY(-2px); }
+        .button { background: #333333; color: #ffffff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; font-size: 1em; cursor: pointer; transition: background 0.3s ease, transform 0.2s ease; margin: 5px; }
+        .button:hover { background: #555555; transform: translateY(-2px); }
+        .button:disabled { background: #444444; color: #777777; cursor: not-allowed; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cccccc; border-radius: 6px; background: #2A2A2A; color: #E6E6E6; font-size: 1em; }
+        input::placeholder, textarea::placeholder { color: #666666; }
+        textarea { min-height: 100px; resize: vertical; }
+        .status { margin-top: 10px; font-size: 0.9em; color: #cccccc; }
+        .wallet-info { color: #cccccc; font-weight: 600; word-break: break-all; }
+        .output-box { background: #2A2A2A; padding: 15px; border-radius: 6px; margin-bottom: 15px; word-break: break-all; font-size: 0.9em; color: #E6E6E6; }
+        .output-box label { display: block; font-size: 0.9em; margin-bottom: 5px; color: #cccccc; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.85em; color: #666666; }
+        .footer a { color: #cccccc; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .how-it-works { background: #222222; padding: 20px; border-radius: 8px; border: 1px solid #cccccc; margin-top: 20px; }
+        .how-it-works ul { list-style-type: disc; padding-left: 20px; margin-top: 10px; }
+        .how-it-works li { margin-bottom: 12px; font-size: 0.9em; }
+        .how-it-works .highlight { color: #cccccc; font-weight: 600; }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .section, .how-it-works { padding: 15px; }
+            .button, .toggle-button { width: 100%; padding: 12px; margin: 8px 0; }
+            .how-it-works ul { padding-left: 15px; }
+            .how-it-works li { font-size: 0.85em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>域名发射台</h1>
+        <div class="section">
+            <h2>连接钱包</h2>
+            <input type="text" id="privateKey" placeholder="请输入私钥 (以0x开头)">
+            <p>钱包地址: <span id="walletAddress" class="wallet-info">未连接</span></p>
+            <div id="networkStatus" class="status">请输入私钥以连接...</div>
+        </div>
+        <div class="section" id="mintDomainSection">
+            <h2>自动铸造域名</h2>
+            <div class="toggle-buttons">
+                <button class="toggle-button active" id="okbButton" onclick="selectDomain('okb')">.okb</button>
+                <button class="toggle-button" id="starButton" onclick="selectDomain('star')">.star</button>
+                <button class="toggle-button" id="xdogButton" onclick="selectDomain('xdog')">.xdog</button>
+                <button class="toggle-button" id="xlayerButton" onclick="selectDomain('xlayer')">.xlayer</button>
+                <button class="toggle-button" id="okButton" onclick="selectDomain('ok')">.ok</button>
+            </div>
+            <div class="toggle-buttons">
+                <button class="toggle-button active" id="digit1Button" onclick="selectDigit(1)">1位</button>
+                <button class="toggle-button" id="digit2Button" onclick="selectDigit(2)">2位</button>
+                <button class="toggle-button" id="digit3Button" onclick="selectDigit(3)">3位</button>
+                <button class="toggle-button" id="digit4Button" onclick="selectDigit(4)">4位</button>
+                <button class="toggle-button" id="digit5Button" onclick="selectDigit(5)">5位</button>
+                <button class="toggle-button" id="digit6Button" onclick="selectDigit(6)">6位</button>
+            </div>
+            <div class="toggle-buttons">
+                <button class="toggle-button active" id="typeLettersButton" onclick="selectType('letters')">字母</button>
+                <button class="toggle-button" id="typeNumbersButton" onclick="selectType('numbers')">数字</button>
+                <button class="toggle-button" id="typeMixedButton" onclick="selectType('mixed')">混合</button>
+            </div>
+            <textarea id="letterDomains" placeholder="输入域名，每行一个（例如：\nname1\nname2\nname3）" style="display: none;"></textarea>
+            <input type="text" id="startNumber" placeholder="输入起始数字或混合字符串（例如：1 或 abc12）" style="display: none;">
+            <input type="text" id="transferAddress" placeholder="目标转账地址 (以0x开头)">
+            <button id="startAutoMint" class="button" disabled>开始自动铸造</button>
+            <button id="stopAutoMint" class="button" disabled>停止自动铸造</button>
+            <div class="output-box">
+                <label>合约地址</label>
+                <span id="contractAddress">0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E</span>
+            </div>
+            <button id="copyAddressButton" class="button">复制合约地址</button>
+            <div id="mintStatus" class="status"></div>
+        </div>
+        <div class="how-it-works">
+            <h2>如何使用？</h2>
+            <p>在X Layer上使用我们的发射台铸造和管理独特的域名NFT！</p>
+            <ul>
+                <li><strong>连接钱包</strong>：输入以0x开头的私钥连接到X Layer（链ID：196）。确保有足够的<span class="highlight">OKB</span>（用于.okb/.ok）或<span class="highlight">ETH</span>（用于.star/.xdog/.xlayer）支付gas费用。</li>
+                <li><strong>自动铸造</strong>：选择.okb、.ok、.star、.xdog或.xlayer，选择1-6位域名长度和类型（字母、数字或混合）。对于字母或混合，输入每行一个域名，按顺序尝试铸造；对于数字，输入起始数字，依次递增铸造。输入目标转账地址，点击“开始自动铸造”，系统将检查当前地址的NFT，优先转账到目标地址，然后按顺序铸造并转账。</li>
+                <li><strong>手动注册</strong>：复制合约地址进行手动注册，通过钱包发送0 ETH/OKB并附带hex数据作为msg.data。</li>
+                <li><strong>安全与唯一性</strong>：每个地址每个合约只能铸造一个域名，域名ID不区分大小写，X Layer交易费用低。</li>
+            </ul>
+        </div>
+        <div class="footer">
+            由<a href="https://www.okx.com/web3/explorer/xlayer" target="_blank">X Layer</a>提供支持 | 域名发射台 © 2025
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        let web3, account, domainContract;
+        let selectedDomain = 'okb';
+        let selectedDigit = 1;
+        let selectedType = 'letters';
+        let isAutoMinting = false;
+
+        const contracts = {
+            okb: { address: '0xBf13Ed020DCF22bc8216A23A1167A5dD1fDC2D0E', suffix: 'okb', currency: 'OKB' },
+            star: { address: '0xfD809E6c00b7ABD737C3FaDFCaFAF4b6564AF9dD', suffix: 'star', currency: 'ETH' },
+            xdog: { address: '0x68B6387628b4096af034c3a9de3073AB18E744C2', suffix: 'xdog', currency: 'ETH' },
+            xlayer: { address: '0x70fda345B815EbfceE5a20858F5115126Ca2abF7', suffix: 'xlayer', currency: 'ETH' },
+            ok: { address: '0xBB65Fbd756490dBfA7164f07D183b56C6300027E', suffix: 'ok', currency: 'OKB' }
+        };
+
+        const domainContractABI = [
+            {"inputs":[{"internalType":"string","name":"_id","type":"string"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"minter","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenId","type":"uint256"},{"indexed":false,"internalType":"string","name":"id","type":"string"}],"name":"Minted","type":"event"},
+            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[],"name":"SUFFIX","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"idsMintedLower","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"ownerToTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+        ];
+
+        const xLayer = { chainId: 196, name: 'X Layer主网', explorerUrl: 'https://www.okx.com/web3/explorer/xlayer', rpcUrl: 'https://rpc.xlayer.tech' };
+
+        async function connectWallet() {
+            const privateKey = document.getElementById('privateKey').value.trim();
+            const status = document.getElementById('networkStatus');
+            try {
+                if (!privateKey.startsWith('0x') || privateKey.length !== 66) {
+                    status.innerText = "请输入有效的以0x开头的64位私钥";
+                    return;
+                }
+                status.innerText = "正在连接...";
+                web3 = new Web3(xLayer.rpcUrl);
+                account = web3.eth.accounts.privateKeyToAccount(privateKey);
+                web3.eth.accounts.wallet.add(account);
+                web3.eth.defaultAccount = account.address;
+                document.getElementById('walletAddress').innerText = `${account.address.slice(0, 6)}...${account.address.slice(-4)}`;
+                domainContract = new web3.eth.Contract(domainContractABI, contracts[selectedDomain].address);
+                status.innerText = "已连接到X Layer";
+                document.getElementById('startAutoMint').disabled = false;
+            } catch (error) {
+                status.innerText = "连接失败: " + error.message;
+            }
+        }
+
+        function selectDomain(domain) {
+            selectedDomain = domain;
+            document.getElementById('okbButton').classList.toggle('active', domain === 'okb');
+            document.getElementById('starButton').classList.toggle('active', domain === 'star');
+            document.getElementById('xdogButton').classList.toggle('active', domain === 'xdog');
+            document.getElementById('xlayerButton').classList.toggle('active', domain === 'xlayer');
+            document.getElementById('okButton').classList.toggle('active', domain === 'ok');
+            document.getElementById('contractAddress').textContent = contracts[domain].address;
+            if (web3) domainContract = new web3.eth.Contract(domainContractABI, contracts[domain].address);
+            document.getElementById('mintStatus').textContent = '';
+        }
+
+        function selectDigit(digit) {
+            selectedDigit = digit;
+            document.getElementById('digit1Button').classList.toggle('active', digit === 1);
+            document.getElementById('digit2Button').classList.toggle('active', digit === 2);
+            document.getElementById('digit3Button').classList.toggle('active', digit === 3);
+            document.getElementById('digit4Button').classList.toggle('active', digit === 4);
+            document.getElementById('digit5Button').classList.toggle('active', digit === 5);
+            document.getElementById('digit6Button').classList.toggle('active', digit === 6);
+            document.getElementById('mintStatus').textContent = '';
+        }
+
+        function selectType(type) {
+            selectedType = type;
+            document.getElementById('typeLettersButton').classList.toggle('active', type === 'letters');
+            document.getElementById('typeNumbersButton').classList.toggle('active', type === 'numbers');
+            document.getElementById('typeMixedButton').classList.toggle('active', type === 'mixed');
+            document.getElementById('letterDomains').style.display = type === 'letters' || type === 'mixed' ? 'block' : 'none';
+            document.getElementById('startNumber').style.display = type === 'numbers' || type === 'mixed' ? 'block' : 'none';
+            document.getElementById('mintStatus').textContent = '';
+        }
+
+        function isValidDomain(domain) {
+            if (selectedType === 'letters') return /^[a-zA-Z]{1,15}$/.test(domain);
+            if (selectedType === 'numbers') return /^[0-9]{1,15}$/.test(domain);
+            return /^[a-zA-Z0-9]{1,15}$/.test(domain);
+        }
+
+        async function checkDomainAvailability(domainId) {
+            try {
+                const domainIdLower = domainId.toLowerCase();
+                const isMinted = await domainContract.methods.idsMintedLower(domainIdLower).call();
+                return !isMinted;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function checkAndTransferExistingNFT(toAddress) {
+            const status = document.getElementById('mintStatus');
+            try {
+                const balance = await domainContract.methods.balanceOf(account.address).call();
+                if (balance > 0) {
+                    status.innerText = `检测到当前地址持有NFT，正在转账到 ${toAddress}...`;
+                    const tokenId = await domainContract.methods.tokenOfOwnerByIndex(account.address, 0).call();
+                    const gas = await domainContract.methods.transferFrom(account.address, toAddress, tokenId).estimateGas({ from: account.address }).catch(() => 100000);
+                    await domainContract.methods.transferFrom(account.address, toAddress, tokenId).send({ from: account.address, gas: Math.floor(gas * 1.2) });
+                    status.innerText = `NFT ${tokenId} 已转账到 ${toAddress}`;
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                status.innerText = `转账现有NFT失败: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || '未知原因' : error.message}`;
+                return false;
+            }
+        }
+
+        async function mintDomain(domainId) {
+            const section = document.getElementById('mintDomainSection');
+            const status = document.getElementById('mintStatus');
+            try {
+                section.classList.add('loading');
+                status.innerText = `正在铸造域名 ${domainId}.${contracts[selectedDomain].suffix}...`;
+                const gas = await domainContract.methods.mint(domainId).estimateGas({ from: account.address }).catch(() => 600000);
+                const tx = await domainContract.methods.mint(domainId).send({ from: account.address, gas: Math.floor(gas * 1.2) });
+                status.innerHTML = `域名 ${domainId}.${contracts[selectedDomain].suffix} 铸造成功！Token ID: ${tx.events.Minted.returnValues.tokenId} (<a href="${xLayer.explorerUrl}/token/${contracts[selectedDomain].address}?a=${tx.events.Minted.returnValues.tokenId}" target="_blank">查看</a>)`;
+                return tx.events.Minted.returnValues.tokenId;
+            } catch (error) {
+                status.innerText = `铸造域名 ${domainId} 失败: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || '未知原因' : error.message}`;
+                return null;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function transferNFT(tokenId, toAddress) {
+            const section = document.getElementById('mintDomainSection');
+            const status = document.getElementById('mintStatus');
+            try {
+                section.classList.add('loading');
+                status.innerText = `正在将NFT ${tokenId} 转账到 ${toAddress}...`;
+                const gas = await domainContract.methods.transferFrom(account.address, toAddress, tokenId).estimateGas({ from: account.address }).catch(() => 100000);
+                await domainContract.methods.transferFrom(account.address, toAddress, tokenId).send({ from: account.address, gas: Math.floor(gas * 1.2) });
+                status.innerText = `NFT ${tokenId} 已成功转账到 ${toAddress}`;
+            } catch (error) {
+                status.innerText = `转账NFT ${tokenId} 失败: ${error.message.includes('revert') ? error.message.split('revert')[1]?.trim() || '未知原因' : error.message}`;
+            } finally {
+                section.classList.remove('loading');
+            }
+        }
+
+        async function startAutoMint() {
+            const transferAddress = document.getElementById('transferAddress').value.trim();
+            const status = document.getElementById('mintStatus');
+            const letterDomains = document.getElementById('letterDomains').value.trim();
+            const startNumber = document.getElementById('startNumber').value.trim();
+
+            if (!web3 || !account) {
+                status.innerText = "请先连接钱包！";
+                return;
+            }
+            if (!transferAddress.startsWith('0x') || transferAddress.length !== 42) {
+                status.innerText = "请输入有效的目标转账地址（以0x开头，42位）";
+                return;
+            }
+            if ((selectedType === 'letters' || selectedType === 'mixed') && !letterDomains) {
+                status.innerText = "请输入至少一个域名！";
+                return;
+            }
+            if (selectedType === 'numbers' && (!startNumber || isNaN(startNumber) || startNumber < 0)) {
+                status.innerText = "请输入有效的起始数字（大于或等于0）！";
+                return;
+            }
+            if (selectedType === 'mixed' && !isValidDomain(startNumber)) {
+                status.innerText = "请输入有效的起始混合字符串！";
+                return;
+            }
+
+            isAutoMinting = true;
+            document.getElementById('startAutoMint').disabled = true;
+            document.getElementById('stopAutoMint').disabled = false;
+            status.innerText = "开始自动铸造...";
+
+            const maxAttempts = 1000;
+            let attempts = 0;
+            let domainList = [];
+            let currentNumber = selectedType === 'numbers' ? parseInt(startNumber) || 0 : startNumber;
+
+            if (selectedType === 'letters' || selectedType === 'mixed') {
+                domainList = letterDomains.split('\n').map(d => d.trim()).filter(d => d && isValidDomain(d));
+                if (domainList.length === 0) {
+                    status.innerText = "没有有效的域名输入！";
+                    stopAutoMint();
+                    return;
+                }
+            }
+
+            while (isAutoMinting && attempts < maxAttempts) {
+                const transferred = await checkAndTransferExistingNFT(transferAddress);
+                if (transferred) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    continue;
+                }
+
+                let domainId;
+                if (selectedType === 'letters' || selectedType === 'mixed') {
+                    if (domainList.length === 0) {
+                        status.innerText = "域名列表已用尽，自动铸造停止";
+                        stopAutoMint();
+                        return;
+                    }
+                    domainId = domainList[0];
+                } else {
+                    domainId = currentNumber.toString().padStart(selectedDigit, '0');
+                    if (domainId.length > selectedDigit || domainId.length > 15 || !isValidDomain(domainId)) {
+                        currentNumber++;
+                        attempts++;
+                        continue;
+                    }
+                }
+
+                status.innerText = `正在检查域名 ${domainId}.${contracts[selectedDomain].suffix}...`;
+                const isAvailable = await checkDomainAvailability(domainId);
+                if (isAvailable) {
+                    const tokenId = await mintDomain(domainId);
+                    if (tokenId) {
+                        await transferNFT(tokenId, transferAddress);
+                    }
+                    if (selectedType === 'letters' || selectedType === 'mixed') {
+                        domainList.shift();
+                    } else {
+                        currentNumber++;
+                    }
+                } else {
+                    status.innerText = `域名 ${domainId}.${contracts[selectedDomain].suffix} 已被铸造，尝试下一个...`;
+                    if (selectedType === 'letters' || selectedType === 'mixed') {
+                        domainList.shift();
+                    } else {
+                        currentNumber++;
+                    }
+                }
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            if (attempts >= maxAttempts) {
+                status.innerText = "达到最大尝试次数，自动铸造停止";
+                stopAutoMint();
+            }
+        }
+
+        function stopAutoMint() {
+            isAutoMinting = false;
+            document.getElementById('startAutoMint').disabled = false;
+            document.getElementById('stopAutoMint').disabled = true;
+            document.getElementById('mintStatus').innerText = "自动铸造已停止";
+        }
+
+        function copyToClipboard() {
+            const status = document.getElementById('mintStatus');
+            const contractAddress = document.getElementById('contractAddress').textContent;
+            const textArea = document.createElement('textarea');
+            textArea.value = contractAddress;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                status.innerText = "合约地址已复制到剪贴板";
+            } catch (error) {
+                status.innerText = "复制合约地址失败，请手动复制";
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('startAutoMint').disabled = true;
+            document.getElementById('stopAutoMint').disabled = true;
+            document.getElementById('copyAddressButton').disabled = false;
+            document.getElementById('privateKey').addEventListener('input', connectWallet);
+            document.getElementById('startAutoMint').addEventListener('click', startAutoMint);
+            document.getElementById('stopAutoMint').addEventListener('click', stopAutoMint);
+            document.getElementById('copyAddressButton').addEventListener('click', copyToClipboard);
+        });
+    </script>
+</body>
+</html>
